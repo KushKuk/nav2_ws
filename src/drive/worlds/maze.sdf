@@ -1,0 +1,137 @@
+<?xml version="1.0" ?>
+<sdf version="1.6">
+  <world name="turtlebot_maze">
+
+<model name="ground_plane">
+  <static>true</static>
+  <link name="link">
+    <collision name="collision">
+      <geometry>
+        <plane>
+          <normal>0 0 1</normal>
+          <size>50 50</size>
+        </plane>
+      </geometry>
+    </collision>
+    <visual name="visual">
+      <geometry>
+        <plane>
+          <normal>0 0 1</normal>
+          <size>50 50</size>
+        </plane>
+      </geometry>
+      <material>
+        <ambient>0.5 0.5 0.5 1</ambient>
+        <diffuse>0.5 0.5 0.5 1</diffuse>
+      </material>
+    </visual>
+  </link>
+</model>
+
+<light name="sun" type="directional">
+  <pose>0 0 100 0 0 0</pose>
+  <diffuse>1 1 1 1</diffuse>
+  <specular>0.5 0.5 0.5 1</specular>
+  <attenuation>
+    <constant>0.0</constant>
+    <linear>0.0</linear>
+    <quadratic>0.0</quadratic>
+  </attenuation>
+  <direction>-0.5 -0.5 -1</direction>
+</light>
+
+    <!-- Room 1: Horizontal wall -->
+    <model name="wall_1">
+      <static>true</static>
+      <link name="link">
+        <pose>0 0 0.5 0 0 0</pose>
+        <collision name="collision">
+          <geometry>
+            <box><size>6 0.2 1</size></box>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <box><size>6 0.2 1</size></box>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Room 1: Vertical wall -->
+    <model name="wall_2">
+      <static>true</static>
+      <link name="link">
+        <pose>-2.9 2 0.5 0 0 0</pose>
+        <collision name="collision">
+          <geometry>
+            <box><size>0.2 4 1</size></box>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <box><size>0.2 4 1</size></box>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Corridor wall -->
+    <model name="wall_3">
+      <static>true</static>
+      <link name="link">
+        <pose>0 4 0.5 0 0 0</pose>
+        <collision name="collision">
+          <geometry>
+            <box><size>4 0.2 1</size></box>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <box><size>4 0.2 1</size></box>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Another vertical wall -->
+    <model name="wall_4">
+      <static>true</static>
+      <link name="link">
+        <pose>2 2 0.5 0 0 0</pose>
+        <collision name="collision">
+          <geometry>
+            <box><size>0.2 4 1</size></box>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <box><size>0.2 4 1</size></box>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Center post -->
+    <model name="center_post">
+      <static>true</static>
+      <link name="link">
+        <pose>0 2 0.5 0 0 0</pose>
+        <collision name="collision">
+          <geometry>
+            <box><size>0.5 0.5 1</size></box>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <box><size>0.5 0.5 1</size></box>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+
+    <!-- More walls and layout can be added here -->
+
+  </world>
+</sdf>
+

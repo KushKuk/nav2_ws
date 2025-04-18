@@ -17,7 +17,7 @@ def generate_launch_description():
     urdf_path = os.path.join(drive_share_dir, 'models', 'drive', 'urdf', 'drive.urdf')
     
     # World file path
-    world_path = os.path.join(drive_share_dir, 'worlds', 'empty.world')
+    world_path = os.path.join(drive_share_dir, 'worlds', 'maze.sdf')    
     
     return LaunchDescription([
         # Launch Ignition Gazebo with the empty world
