@@ -14,7 +14,7 @@
     <plugin filename="ignition-gazebo-user-commands-system"
         name="ignition::gazebo::systems::UserCommands"/>
 
-  <plugin filename="/usr/lib/x86_64-linux-gnu/ign-gazebo-6/plugins/libignition-gazebo-imu-system.so"
+  <plugin filename="libignition-gazebo-imu-system.so"
         name="ignition::gazebo::systems::Imu">
   </plugin>
 
