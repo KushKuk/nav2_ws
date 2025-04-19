@@ -840,4 +840,7 @@
     <axis
       xyz="0 1 0" />
   </joint>
+  <gazebo>
+    <plugin name="crab_steering" filename="libcrab_steering_plugin.so"/>
+  </gazebo>
 </robot>

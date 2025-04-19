@@ -18,4 +18,8 @@ install(
   DESTINATION share/${PROJECT_NAME}/models
 )
 
+install(PROGRAMS
+  scripts/drive_node.py
+  DESTINATION lib/${PROJECT_NAME}
+)
 ament_package()
