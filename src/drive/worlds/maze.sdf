@@ -6,6 +6,7 @@
         filename="ignition-gazebo-physics-system"
         name="ignition::gazebo::systems::Physics">
     </plugin>
+
     <plugin
         filename="ignition-gazebo-scene-broadcaster-system"
         name="ignition::gazebo::systems::SceneBroadcaster">
@@ -14,7 +15,7 @@
     <plugin filename="ignition-gazebo-user-commands-system"
         name="ignition::gazebo::systems::UserCommands"/>
 
-  <plugin filename="libignition-gazebo-imu-system.so"
+  <!-- <plugin filename="libignition-gazebo-imu-system.so"
         name="ignition::gazebo::systems::Imu">
   </plugin>
 
@@ -22,7 +23,7 @@
       filename="/usr/lib/x86_64-linux-gnu/ign-gazebo-6/plugins/libignition-gazebo6-sensors-system.so"
       name="ignition::gazebo::systems::Sensors">
       <render_engine>ogre2</render_engine>
-    </plugin>
+    </plugin> -->
 
     <model name="ground_plane">
       <static>true</static>

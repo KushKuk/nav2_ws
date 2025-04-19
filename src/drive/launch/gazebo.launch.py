@@ -33,7 +33,7 @@ def generate_launch_description():
 
         # Delay the spawn to ensure Gazebo is ready
         TimerAction(
-            period=4.0,
+            period=3.0,
             actions=[
                 Node(
                     package='ros_gz_sim',
@@ -46,5 +46,27 @@ def generate_launch_description():
                     output='screen'
                 )
             ]
-        )
+        ),
+
+        # IMU Bridge
+        Node(
+            package='ros_gz_bridge',
+            executable='parameter_bridge',
+            name='imu_bridge',
+            arguments=['/imu/data@sensor_msgs/msg/Imu@ignition.msgs.IMU'],
+            remappings=[('/imu/data', '/imu/data')],
+            output='screen'
+        ),
+
+
+        # LiDAR bridge
+        Node(
+            package='ros_gz_bridge',
+            executable='parameter_bridge',
+            name='lidar_bridge',
+            arguments=['/scan@sensor_msgs/msg/LaserScan@ignition.msgs.LaserScan'],
+            remappings=[('/scan', '/scan')],
+            output='screen'
+        ),
+
     ])
