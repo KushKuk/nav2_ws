@@ -202,7 +202,7 @@
       link="rotate_1" />
     <axis
       xyz="0 0 1" />
-    <dynamics damping="0.2" />
+    <dynamics damping="0.5" />
   </joint>
   <link
     name="wheel_1">
@@ -317,7 +317,7 @@
       link="rotate_2" />
     <axis
       xyz="0 0 1" />
-    <dynamics damping="0.2" />
+    <dynamics damping="0.5" />
   </joint>
   <link
     name="wheel_2">
@@ -432,7 +432,7 @@
       link="rotate_3" />
     <axis
       xyz="0 0 1" />
-    <dynamics damping="0.2" />
+    <dynamics damping="0.5" />
   </joint>
   <link
     name="wheel_3">
@@ -547,7 +547,7 @@
       link="rotate_4" />
     <axis
       xyz="0 0 1" />
-    <dynamics damping="0.2" />
+    <dynamics damping="0.5" />
   </joint>
   <link
     name="wheel_4">
@@ -662,7 +662,7 @@
       link="rotate_5" />
     <axis
       xyz="0 0.6257 0.78007" />
-    <dynamics damping="0.2" />
+    <dynamics damping="0.5" />
   </joint>
   <link
     name="wheel_5">
@@ -777,7 +777,7 @@
       link="rotate_6" />
     <axis
       xyz="0 0.075039 -0.99718" />
-    <dynamics damping="0.2" />
+    <dynamics damping="0.5" />
   </joint>
   <link
     name="wheel_6">
@@ -841,6 +841,6 @@
       xyz="0 1 0" />
   </joint>
   <gazebo>
-    <plugin name="crab_steering" filename="libcrab_steering_plugin.so"/>
+    <plugin name="crab_steering" filename="/home/kush/nav2_ws/install/crab_steering_plugin/lib/libcrab_steering_plugin.so"/>
   </gazebo>
 </robot>

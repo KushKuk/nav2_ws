@@ -9,6 +9,7 @@ import tty
 import threading
 from select import select
 
+speed = 1.0
 
 class CrabSteeringTeleop(Node):
     def __init__(self):
@@ -48,19 +49,19 @@ class CrabSteeringTeleop(Node):
 
     def process_key(self, key):
         if key == 'w':
-            self.linear_x = 0.5
+            self.linear_x = speed
             self.linear_y = 0.0
             self.get_logger().info("Forward")
         elif key == 's':
-            self.linear_x = -0.5
+            self.linear_x = -speed
             self.linear_y = 0.0
             self.get_logger().info("Backward")
         elif key == 'a':
-            self.linear_y = 0.5
+            self.linear_y = speed
             self.linear_x = 0.0
             self.get_logger().info("Left (Crab)")
         elif key == 'd':
-            self.linear_y = -0.5
+            self.linear_y = -speed
             self.linear_x = 0.0
             self.get_logger().info("Right (Crab)")
         elif key == ' ':

@@ -4,10 +4,12 @@
 #include <memory>
 #include <vector>
 #include <string>
+#include <unordered_map>
 
 #include <ignition/gazebo/System.hh>
 #include <ignition/gazebo/components/Joint.hh>
 #include <ignition/gazebo/components/JointVelocityCmd.hh>
+#include <ignition/gazebo/components/JointPosition.hh>
 #include <ignition/gazebo/components/Name.hh>
 
 #include <rclcpp/rclcpp.hpp>
@@ -15,6 +17,17 @@
 
 namespace crab_steering
 {
+  // Simple PID struct
+  struct PIDData
+  {
+    double kp{0.0};
+    double ki{0.0};
+    double kd{0.0};
+
+    double integral{0.0};
+    double previousError{0.0};
+  };
+
   class CrabSteeringPlugin
     : public ignition::gazebo::System,
       public ignition::gazebo::ISystemConfigure,
@@ -30,11 +43,11 @@ namespace crab_steering
                    ignition::gazebo::EntityComponentManager &_ecm,
                    ignition::gazebo::EventManager &eventMgr) override;
 
-    // PreUpdate method (called at every simulation step)
+    // PreUpdate method (called every simulation step)
     void PreUpdate(const ignition::gazebo::UpdateInfo &info,
                    ignition::gazebo::EntityComponentManager &_ecm) override;
 
-    // Callback for cmd_vel messages
+    // Callback for /cmd_vel messages
     void CmdVelCallback(const geometry_msgs::msg::Twist::SharedPtr msg);
 
   private:
@@ -42,15 +55,18 @@ namespace crab_steering
     std::shared_ptr<rclcpp::Node> rosNode;
     rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr cmdSub;
 
-    // Entities representing steering and drive wheel joints
+    // Joint entities
     std::vector<ignition::gazebo::Entity> steeringJoints;
     std::vector<ignition::gazebo::Entity> wheelJoints;
 
-    // Linear velocities from Twist messages
+    // PID controllers per steering joint
+    std::unordered_map<ignition::gazebo::Entity, PIDData> pidControllers;
+
+    // Motion commands
     double linearX{0.0};
     double linearY{0.0};
 
-    // Model entity this plugin is attached to
+    // Model reference
     ignition::gazebo::Entity modelEntity;
   };
 }
