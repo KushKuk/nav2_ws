@@ -1,6 +1,15 @@
 <?xml version="1.0"?>
 <sdf version="1.6">
   <world name="maze_world">
+  <plugin filename="/usr/lib/x86_64-linux-gnu/ign-gazebo-6/plugins/libignition-gazebo-imu-system.so"
+        name="ignition::gazebo::systems::Imu">
+  </plugin>
+
+    <plugin
+      filename="/usr/lib/x86_64-linux-gnu/ign-gazebo-6/plugins/libignition-gazebo6-sensors-system.so"
+      name="ignition::gazebo::systems::Sensors">
+      <render_engine>ogre2</render_engine>
+    </plugin>
 
     <model name="ground_plane">
       <static>true</static>

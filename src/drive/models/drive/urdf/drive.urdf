@@ -2,79 +2,6 @@
 <robot
   name="drive">
 
-  <!-- IMU Sensor -->
-  <link name="imu_link"/>
-  <joint name="imu_joint" type="fixed">
-    <parent link="base_link"/>
-    <child link="imu_link"/>
-    <pose>0 0 0.1 0 0 0</pose>
-  </joint>
-
-  <gazebo reference="imu_link">
-    <sensor name="imu_sensor" type="imu">
-      <pose>0 0 0 0 0 0</pose>
-      <always_on>1</always_on>
-      <update_rate>50.0</update_rate>
-      <imu>
-        <angular_velocity>
-          <x>true</x>
-          <y>true</y>
-          <z>true</z>
-        </angular_velocity>
-        <linear_acceleration>
-          <x>true</x>
-          <y>true</y>
-          <z>true</z>
-        </linear_acceleration>
-      </imu>
-      <plugin name="imu_plugin" filename="libignition-gazebo-imu-system.so">
-        <ros>
-          <namespace>/</namespace>
-        </ros>
-        <topic_name>imu/data</topic_name>
-        <frame_name>imu_link</frame_name>
-      </plugin>
-    </sensor>
-  </gazebo>
-
-  <!-- LiDAR Sensor -->
-  <link name="lidar_link"/>
-  <joint name="lidar_joint" type="fixed">
-    <parent link="base_link"/>
-    <child link="lidar_link"/>
-    <pose>0 0 0.2 0 0 0</pose> <!-- Adjust height as needed -->
-  </joint>
-
-  <gazebo reference="lidar_link">
-    <sensor name="lidar_sensor" type="gpu_ray">
-      <pose>0 0 0 0 0 0</pose>
-      <visualize>true</visualize>
-      <update_rate>20.0</update_rate>
-      <ray>
-        <scan>
-          <horizontal>
-            <samples>720</samples>
-            <resolution>1.0</resolution>
-            <min_angle>-3.14</min_angle>
-            <max_angle>3.14</max_angle>
-          </horizontal>
-        </scan>
-        <range>
-          <min>0.12</min>
-          <max>10.0</max>
-          <resolution>0.01</resolution>
-        </range>
-      </ray>
-      <plugin name="gazebo_ros_laser" filename="libgazebo_ros_ray_sensor.so">
-        <ros>
-          <namespace>/</namespace>
-        </ros>
-        <topic_name>scan</topic_name>
-        <frame_name>lidar_link</frame_name>
-      </plugin>
-    </sensor>
-  </gazebo>
-
   <link
     name="base_link">
     <inertial>
@@ -115,6 +42,80 @@
       </geometry>
     </collision>
   </link>
+
+  <!-- IMU Sensor -->
+  <link name="imu_link"/>
+  <joint name="imu_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="imu_link"/>
+    <pose>0 0 0.1 0 0 0</pose>
+  </joint>
+
+  <gazebo reference="imu_link">
+    <sensor name="imu_sensor" type="imu">
+      <pose>0 0 0 0 0 0</pose>
+      <always_on>1</always_on>
+      <update_rate>50.0</update_rate>
+      <imu>
+        <angular_velocity>
+          <x>true</x>
+          <y>true</y>
+          <z>true</z>
+        </angular_velocity>
+        <linear_acceleration>
+          <x>true</x>
+          <y>true</y> 
+          <z>true</z>
+        </linear_acceleration>
+      </imu>
+      <plugin name="imu_plugin" filename="libgazebo_ros_imu_sensor.so">
+        <ros>
+          <namespace>/</namespace>
+        </ros>
+        <topic_name>imu/data</topic_name>
+        <frame_name>imu_link</frame_name>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <!-- LiDAR Sensor -->
+  <link name="lidar_link"/>
+  <joint name="lidar_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="lidar_link"/>
+    <pose>0 0 0.2 0 0 0</pose> <!-- Adjust height as needed -->
+  </joint>
+
+  <gazebo reference="lidar_link">
+    <sensor name="lidar_sensor" type="gpu_ray">
+      <pose>0 0 0 0 0 0</pose>
+      <visualize>true</visualize>
+      <update_rate>20.0</update_rate>
+      <ray>
+        <scan>
+          <horizontal>
+            <samples>720</samples>
+            <resolution>1.0</resolution>
+            <min_angle>-3.14</min_angle>
+            <max_angle>3.14</max_angle>
+          </horizontal>
+        </scan>
+        <range>
+          <min>0.12</min>
+          <max>10.0</max>
+          <resolution>0.01</resolution>
+        </range>
+      </ray>
+      <plugin name="gazebo_ros_laser" filename="libignition-gazebo-lidar-system.so">
+        <ros>
+          <namespace>/</namespace>
+        </ros>
+        <topic_name>scan</topic_name>
+        <frame_name>lidar_link</frame_name>
+      </plugin>
+    </sensor>
+  </gazebo>
+
   <link
     name="rotate_1">
     <inertial>
