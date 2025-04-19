@@ -1,6 +1,19 @@
 <?xml version="1.0"?>
-<sdf version="1.6">
+<sdf version="1.8">
   <world name="maze_world">
+
+  <plugin
+        filename="ignition-gazebo-physics-system"
+        name="ignition::gazebo::systems::Physics">
+    </plugin>
+    <plugin
+        filename="ignition-gazebo-scene-broadcaster-system"
+        name="ignition::gazebo::systems::SceneBroadcaster">
+    </plugin>
+
+    <plugin filename="ignition-gazebo-user-commands-system"
+        name="ignition::gazebo::systems::UserCommands"/>
+
   <plugin filename="/usr/lib/x86_64-linux-gnu/ign-gazebo-6/plugins/libignition-gazebo-imu-system.so"
         name="ignition::gazebo::systems::Imu">
   </plugin>
