@@ -11,6 +11,8 @@ find_package(ament_cmake REQUIRED)
 find_package(ignition-gazebo6 REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(nav_msgs REQUIRED)
+find_package(tf2_ros REQUIRED)  # Add tf2_ros here
 
 # Define the plugin as a shared library
 add_library(crab_steering_plugin SHARED
@@ -23,10 +25,19 @@ target_include_directories(crab_steering_plugin PUBLIC
 )
 
 # Link dependencies to the plugin
+target_link_libraries(crab_steering_plugin
+  ${rclcpp_LIBRARIES}
+  ${nav_msgs_LIBRARIES}
+  ${tf2_ros_LIBRARIES}  # Link tf2_ros here
+)
+
+# Link dependencies to the plugin
 ament_target_dependencies(crab_steering_plugin
   rclcpp
   geometry_msgs
   ignition-gazebo6
+  nav_msgs
+  tf2_ros  # Add tf2_ros to the dependencies here
 )
 
 # Install the plugin library
@@ -42,5 +53,4 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 
-# Declare the package for ROS 2
 ament_package()

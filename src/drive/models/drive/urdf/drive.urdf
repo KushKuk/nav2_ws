@@ -866,4 +866,5 @@
     </plugin>
     <plugin name="crab_steering" filename="/home/kush/nav2_ws/install/crab_steering_plugin/lib/libcrab_steering_plugin.so"/>
   </gazebo>
+
 </robot>
