@@ -840,7 +840,30 @@
     <axis
       xyz="0 1 0" />
   </joint>
-  <gazebo>
+<gazebo>
+    <plugin
+      filename="libignition-gazebo-joint-state-publisher-system.so"
+      name="ignition::gazebo::systems::JointStatePublisher">
+      <joint_name>joint_wheel_1</joint_name>
+      <joint_name>joint_wheel_2</joint_name>
+      <joint_name>joint_wheel_3</joint_name>
+      <joint_name>joint_wheel_4</joint_name>
+      <joint_name>joint_wheel_5</joint_name>
+      <joint_name>joint_wheel_6</joint_name>
+      <joint_name>joint_rotate_1</joint_name>
+      <joint_name>joint_rotate_2</joint_name>
+      <joint_name>joint_rotate_3</joint_name>
+      <joint_name>joint_rotate_4</joint_name>
+      <joint_name>joint_rotate_5</joint_name>
+      <joint_name>joint_rotate_6</joint_name>
+      <ros>
+        <republish>
+          <topic>/joint_states</topic>
+          <inittial_qos>1</inittial_qos>
+          <qos_profile>sensor_data</qos_profile>
+        </republish>
+      </ros>
+    </plugin>
     <plugin name="crab_steering" filename="/home/kush/nav2_ws/install/crab_steering_plugin/lib/libcrab_steering_plugin.so"/>
   </gazebo>
 </robot>
