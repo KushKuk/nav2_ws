@@ -7,6 +7,10 @@ find_package(rclcpp REQUIRED)
 find_package(rclpy REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(xacro REQUIRED)
+find_package(controller_manager REQUIRED)
+find_package(velocity_controllers REQUIRED)
+find_package(position_controllers REQUIRED)
+
 
 # Install directories for launch, worlds, and models
 install(DIRECTORY launch

@@ -283,7 +283,7 @@ Visualization Manager:
           Value: true
       Enabled: true
       Name: Controller
-    - Class: rviz_default_plugins/Imu # Added IMU display.
+    - Class: rviz_imu_plugin/Imu # Changed to rviz_imu_plugin/Imu
       Enabled: true
       Name: IMU
       Topic:

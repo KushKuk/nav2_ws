@@ -15,28 +15,6 @@
     <plugin filename="ignition-gazebo-user-commands-system"
         name="ignition::gazebo::systems::UserCommands"/>
 
-<plugin name="ros2_control" filename="libign_ros2_control-system.so">
-  <ignition_ros2_control>
-    <plugin type="ign_ros2_control::IgnitionROS2ControlPlugin">
-      <parameters>
-        <robot_description>
-          </robot_description>
-        <robot_name>drive</robot_name>
-      </parameters>
-    </plugin>
-  </ignition_ros2_control>
-</plugin>
-
-  <!-- <plugin filename="libignition-gazebo-imu-system.so"
-        name="ignition::gazebo::systems::Imu">
-  </plugin>
-
-    <plugin
-      filename="/usr/lib/x86_64-linux-gnu/ign-gazebo-6/plugins/libignition-gazebo6-sensors-system.so"
-      name="ignition::gazebo::systems::Sensors">
-      <render_engine>ogre2</render_engine>
-    </plugin> -->
-
     <model name="ground_plane">
       <static>true</static>
       <link name="link">

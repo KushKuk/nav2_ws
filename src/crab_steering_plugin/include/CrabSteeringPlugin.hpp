@@ -14,6 +14,9 @@
 
 #include <rclcpp/rclcpp.hpp>
 #include <geometry_msgs/msg/twist.hpp>
+#include <nav_msgs/msg/odometry.hpp>
+#include <geometry_msgs/msg/transform_stamped.hpp>
+#include <tf2_ros/transform_broadcaster.h>
 
 namespace crab_steering
 {
@@ -37,6 +40,9 @@ namespace crab_steering
     // Constructor
     CrabSteeringPlugin() = default;
 
+    // Destructor
+    ~CrabSteeringPlugin() = default;
+
     // Configure method (called once at the beginning)
     void Configure(const ignition::gazebo::Entity &_entity,
                    const std::shared_ptr<const sdf::Element> &_sdf,
@@ -51,9 +57,11 @@ namespace crab_steering
     void CmdVelCallback(const geometry_msgs::msg::Twist::SharedPtr msg);
 
   private:
-    // ROS 2 Node and subscriber
+    // ROS 2 Node, subscriber, publisher, and transform broadcaster
     std::shared_ptr<rclcpp::Node> rosNode;
     rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr cmdSub;
+    rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odomPub;
+    std::shared_ptr<tf2_ros::TransformBroadcaster> tfBroadcaster;
 
     // Joint entities
     std::vector<ignition::gazebo::Entity> steeringJoints;
@@ -65,6 +73,10 @@ namespace crab_steering
     // Motion commands
     double linearX{0.0};
     double linearY{0.0};
+
+    // Odometry variables
+    double x{0.0}, y{0.0}, theta{0.0};
+    rclcpp::Time lastTime;
 
     // Model reference
     ignition::gazebo::Entity modelEntity;
