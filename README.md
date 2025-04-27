@@ -74,24 +74,24 @@ nav2_ws/
     └── scripts/
         ├── drive_node.py
         └── subscriber.cpp
-
+```
 Clone this repo into your workspace’s src/ directory:
-
+```
 mkdir -p ~/nav2_ws
 cd ~/nav2_ws
 git clone https://github.com/KushKuk/nav2_ws.git
-
+```
 Install system dependencies:
-
+```
 sudo apt update
 sudo apt install ros-humble-ignition-gazebo6 ros-humble-rclcpp ros-humble-geometry-msgs
-
+```
 Build & source:
-
+```
 cd ~/nav2_ws
 colcon build --symlink-install
 source install/setup.bash
-
+```
 Package: crab_steering_plugin
 What It Does
 
@@ -194,9 +194,10 @@ This project is released under the MIT License — see LICENSE for details.
 NOTE:
 
 Add to .bashrc or .zshrc:
-
+```
 source ~/nav2_ws/install/setup.bash
 
 export GAZEBO_PLUGIN_PATH=/usr/lib/x86_64-linux-gnu/ign-gazebo-6/plugins:~/nav2_ws/install/crab_steering_plugin/lib:$GAZEBO_PLUGIN_PATH
 export IGN_GAZEBO_PLUGIN_PATH=~/nav2_ws/install/crab_steering_plugin/lib:$IGN_GAZEBO_PLUGIN_PATH
 export IGN_GAZEBO_RESOURCE_PATH=~/nav2_ws/src/drive/models:$IGN_GAZEBO_RESOURCE_PATH
+```
