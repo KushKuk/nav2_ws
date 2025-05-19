@@ -19,73 +19,77 @@
 using namespace crab_steering;
 
 void CrabSteeringPlugin::Configure(const ignition::gazebo::Entity &_entity,
-  const std::shared_ptr<const sdf::Element> & /*_sdf*/,
-  ignition::gazebo::EntityComponentManager &_ecm,
-  ignition::gazebo::EventManager & /*_eventMgr*/)
-{
-    this->modelEntity = _entity;
-
-    // Discover joints and initialize components
-    _ecm.Each<ignition::gazebo::components::Joint, ignition::gazebo::components::Name>(
-        [&](const ignition::gazebo::Entity &entity,
-            const ignition::gazebo::components::Joint * /*joint*/,
-            const ignition::gazebo::components::Name *name) -> bool
-        {
-            const std::string jointName = name->Data();
-
-            if (jointName.find("rotate") != std::string::npos)
-            {
-                this->steeringJoints.push_back(entity);
-
-                if (!_ecm.Component<ignition::gazebo::components::JointPosition>(entity))
-                {
-                    _ecm.CreateComponent(entity, ignition::gazebo::components::JointPosition());
-                }
-
-                if (!_ecm.Component<ignition::gazebo::components::JointVelocityCmd>(entity))
-                {
-                    _ecm.CreateComponent(entity, ignition::gazebo::components::JointVelocityCmd({0.0}));
-                }
-
-                // Init PID
-                PIDData pid;
-                pid.kp = 5.0;
-                pid.ki = 0.0;
-                pid.kd = 0.2;
-                this->pidControllers[entity] = pid;
-
-                RCLCPP_INFO(this->rosNode->get_logger(), "Added rotate joint: %s", jointName.c_str());
-            }
-            else if (jointName.find("wheel") != std::string::npos)
-            {
-                this->wheelJoints.push_back(entity);
-
-                if (!_ecm.Component<ignition::gazebo::components::JointVelocityCmd>(entity))
-                {
-                    _ecm.CreateComponent(entity, ignition::gazebo::components::JointVelocityCmd({0.0}));
-                }
-                RCLCPP_INFO(this->rosNode->get_logger(), "Added wheel joint: %s", jointName.c_str());
-            }
-            return true;
-        });
-
-    // Safe ROS 2 initialization
-    if (!rclcpp::ok())
-    {
-        rclcpp::init(0, nullptr);
-    }
-
-    this->rosNode = std::make_shared<rclcpp::Node>("crab_steering_plugin");
-
-    this->cmdSub = rosNode->create_subscription<geometry_msgs::msg::Twist>(
-        "/cmd_vel", 10,
-        std::bind(&CrabSteeringPlugin::CmdVelCallback, this, std::placeholders::_1));
-
-    // Odometry publisher
-    this->odomPub = this->rosNode->create_publisher<nav_msgs::msg::Odometry>("/odom", 10);
-    this->tfBroadcaster = std::make_shared<tf2_ros::TransformBroadcaster>(this->rosNode);
-    this->lastTime = this->rosNode->now();
-}
+    const std::shared_ptr<const sdf::Element> & /*_sdf*/,
+    ignition::gazebo::EntityComponentManager &_ecm,
+    ignition::gazebo::EventManager & /*_eventMgr*/)
+  {
+      this->modelEntity = _entity;
+  
+      // Safe ROS 2 initialization
+      if (!rclcpp::ok())
+      {
+          rclcpp::init(0, nullptr);
+      }
+  
+      if (!this->rosNode) {
+          this->rosNode = std::make_shared<rclcpp::Node>("crab_steering_plugin");
+  
+          this->cmdSub = rosNode->create_subscription<geometry_msgs::msg::Twist>(
+              "/cmd_vel", 10,
+              std::bind(&CrabSteeringPlugin::CmdVelCallback, this, std::placeholders::_1));
+  
+          // Odometry publisher
+          this->odomPub = this->rosNode->create_publisher<nav_msgs::msg::Odometry>("/odom", 10);
+          this->tfBroadcaster = std::make_shared<tf2_ros::TransformBroadcaster>(this->rosNode);
+          this->lastTime = this->rosNode->now();
+  
+          RCLCPP_INFO(this->rosNode->get_logger(), "ROS 2 node initialized.");
+      }
+  
+      // Discover joints and initialize components
+      _ecm.Each<ignition::gazebo::components::Joint, ignition::gazebo::components::Name>(
+          [&](const ignition::gazebo::Entity &entity,
+              const ignition::gazebo::components::Joint * /*joint*/,
+              const ignition::gazebo::components::Name *name) -> bool
+          {
+              const std::string jointName = name->Data();
+  
+              if (jointName.find("rotate") != std::string::npos)
+              {
+                  this->steeringJoints.push_back(entity);
+  
+                  if (!_ecm.Component<ignition::gazebo::components::JointPosition>(entity))
+                  {
+                      _ecm.CreateComponent(entity, ignition::gazebo::components::JointPosition());
+                  }
+  
+                  if (!_ecm.Component<ignition::gazebo::components::JointVelocityCmd>(entity))
+                  {
+                      _ecm.CreateComponent(entity, ignition::gazebo::components::JointVelocityCmd({0.0}));
+                  }
+  
+                  // Init PID
+                  PIDData pid;
+                  pid.kp = 5.0;
+                  pid.ki = 0.0;
+                  pid.kd = 0.2;
+                  this->pidControllers[entity] = pid;
+  
+                  RCLCPP_INFO(this->rosNode->get_logger(), "Added rotate joint: %s", jointName.c_str());
+              }
+              else if (jointName.find("wheel") != std::string::npos)
+              {
+                  this->wheelJoints.push_back(entity);
+  
+                  if (!_ecm.Component<ignition::gazebo::components::JointVelocityCmd>(entity))
+                  {
+                      _ecm.CreateComponent(entity, ignition::gazebo::components::JointVelocityCmd({0.0}));
+                  }
+                  RCLCPP_INFO(this->rosNode->get_logger(), "Added wheel joint: %s", jointName.c_str());
+              }
+              return true;
+          });
+  }
 
 void CrabSteeringPlugin::PreUpdate(const ignition::gazebo::UpdateInfo & /*info*/,
     ignition::gazebo::EntityComponentManager &_ecm)
