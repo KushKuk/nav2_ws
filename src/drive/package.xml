@@ -26,13 +26,20 @@
   <depend>controller_manager</depend>
   <depend>velocity_controllers</depend>
   <depend>position_controllers</depend>
-
-<exec_depend>ros_ign_gazebo</exec_depend>
-<exec_depend>ign_gazebo</exec_depend>
+  <depend>differential_steering</depend>
+  
+  <!-- Teleop dependencies -->
+  <depend>teleop_twist_keyboard</depend>
+  <depend>teleop_twist_joy</depend>
+  <depend>teleop_tools</depend>
+  
+  <!-- Gazebo dependencies -->
+  <exec_depend>ros_gz_sim</exec_depend>
+  <exec_depend>ros_gz_bridge</exec_depend>
+  <exec_depend>ign_ros2_control</exec_depend>
 
   <export>
     <build_type>ament_cmake</build_type>
     <architecture_independent/>
   </export>
 </package>
-

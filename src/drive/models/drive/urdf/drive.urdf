@@ -840,6 +840,107 @@
     <axis
       xyz="0 1 0" />
   </joint>
+  
+  <!-- ROS2 Control -->
+  <ros2_control name="rover_system" type="system">
+    <hardware>
+      <plugin>ign_ros2_control/IgnitionSystem</plugin>
+    </hardware>
+    
+    <!-- Wheel Joints -->
+    <joint name="joint_wheel_1">
+      <command_interface name="velocity"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="joint_wheel_2">
+      <command_interface name="velocity"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="joint_wheel_3">
+      <command_interface name="velocity"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="joint_wheel_4">
+      <command_interface name="velocity"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="joint_wheel_5">
+      <command_interface name="velocity"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="joint_wheel_6">
+      <command_interface name="velocity"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    
+    <!-- Steering Joints -->
+    <joint name="joint_rotate_1">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="joint_rotate_2">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="joint_rotate_3">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="joint_rotate_4">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="joint_rotate_5">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="joint_rotate_6">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+  </ros2_control>
+
+  <!-- Gazebo plugins -->
+  <gazebo>
+    <!-- ROS2 Control Plugin -->
+    <plugin filename="libign_ros2_control-system.so" name="ign_ros2_control::IgnitionROS2ControlPlugin">
+      <parameters>/home/ujjwal/nav2_ws/src/drive/models/drive/config/rover_controllers.yaml</parameters>
+      <ros>
+        <namespace>/</namespace>
+      </ros>
+    </plugin>
+
+    <!-- Joint State Publisher -->
+    <plugin
+      filename="libignition-gazebo-joint-state-publisher-system.so"
+      name="ignition::gazebo::systems::JointStatePublisher">
+      <joint_name>joint_wheel_1</joint_name>
+      <joint_name>joint_wheel_2</joint_name>
+      <joint_name>joint_wheel_3</joint_name>
+      <joint_name>joint_wheel_4</joint_name>
+      <joint_name>joint_wheel_5</joint_name>
+      <joint_name>joint_wheel_6</joint_name>
+      <joint_name>joint_rotate_1</joint_name>
+      <joint_name>joint_rotate_2</joint_name>
+      <joint_name>joint_rotate_3</joint_name>
+      <joint_name>joint_rotate_4</joint_name>
+      <joint_name>joint_rotate_5</joint_name>
+      <joint_name>joint_rotate_6</joint_name>
+    </plugin>
+  </gazebo>
+
 <!-- <gazebo>
     <plugin
       filename="libignition-gazebo-joint-state-publisher-system.so"
