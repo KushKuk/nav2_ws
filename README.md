@@ -1,202 +1,207 @@
-# Crab Steering & Drive Packages
+Six-Wheeled Rover Simulation with ROS 2 and Ignition Gazebo
+This project simulates a six-wheeled rover with Ackermann-like steering in Ignition Gazebo, controlled via ROS 2. The rover navigates a maze environment (maze.sdf), using ros2_control for wheel and steering joint control, and supports keyboard teleoperation via drive_node.py. The simulation includes IMU and LiDAR sensors for potential navigation tasks.
+Project Structure
 
-This repository contains two ROS 2/​Ignition Gazebo packages:
+URDF: drive/models/drive/urdf/drive.urdf
+Defines the rover with six wheels, steering joints, IMU, and LiDAR.
+Includes gazebo_ros2_control and JointStatePublisher plugins.
 
-1. **crab_steering_plugin**  
-   A custom Ignition Gazebo Fortress system plugin that implements holonomic “crab” steering on a multi‑wheeled robot via `/cmd_vel`.
 
-2. **drive**  
-   A “drive” stack that launches your robot model in Gazebo, provides a simple `cmd_vel` subscriber, and includes world/​model assets for testing.
+World: drive/worlds/maze.sdf
+A maze with static walls and a ground plane for navigation.
 
----
 
-## Table of Contents
+Launch: drive/launch/ros2_control.launch.py
+Launches Gazebo, spawns the rover, initializes controllers, and runs teleoperation.
 
-- [Features](#features)  
-- [Prerequisites](#prerequisites)  
-- [Workspace Layout](#workspace-layout)  
-- [Building](#building)  
-- [Package: crab_steering_plugin](#package-crab_steering_plugin)  
-  - [What It Does](#what-it-does)  
-  - [Usage](#usage)  
-  - [Plugin Parameters (SDF)](#plugin-parameters-sdf)  
-- [Package: drive](#package-drive)  
-  - [What It Does](#what-it-does-1)  
-  - [Usage](#usage-1)  
-  - [Launching the Robot](#launching-the-robot)  
-  - [Testing with `cmd_vel`](#testing-with-cmd_vel)  
-- [PID Tuning](#pid-tuning)  
-- [License](#license)
 
----
+Config: drive/models/drive/config/rover_controllers.yaml
+Configures drive_controller (wheel velocities) and steer_controller (steering angles).
 
-## Features
 
-- **Holonomic Crab Steering** — steer all wheels by a target angle, drive wheels at requested speed.  
-- **PID‑based Steering** — internal PID loop to command steering joint velocities to reach a desired angle.  
-- **ROS 2 Integration** — subscribes to `/cmd_vel` via `rclcpp`, no external controllers required.  
-- **Ignition Gazebo 6** compatibility.  
-- **Drive Package** with launch files, URDF/SDF models, worlds, and a simple C++ subscriber example.
+Scripts:
+drive/scripts/subscriber.cpp: A ROS 2 node to print /cmd_vel messages for debugging.
+drive/scripts/drive_node.py: A keyboard teleoperation node to publish /cmd_vel.
 
----
 
-## Prerequisites
+Package: drive (ROS 2 package in ~/nav2_ws/src/drive).
 
-- Ubuntu 22.04 (or compatible)  
-- ROS 2 Humble Hawksbill  
-- Ignition Gazebo Fortress (gazebo6)  
-- `colcon`, `ament_cmake`, `rclcpp`, `geometry_msgs`, `ignition-gazebo6`
+Prerequisites
 
----
+OS: Ubuntu 22.04 (Jammy) or later.
+ROS 2: Humble Hawksbill (recommended).
+Ignition Gazebo: Fortress (compatible with ros_gz_sim).
+Dependencies:
+ros2_control, ros2_controllers, gazebo_ros2_control
+ros_gz_sim, ros_gz_bridge
+robot_state_publisher
+differential_steering (for ackermann_cmd_vel_converter)
+teleop_twist_keyboard (optional, if drive_node.py is unavailable)
 
-## Workspace Layout
 
-```text
-nav2_ws/
-├── crab_steering_plugin/      # Custom plugin package
-│   ├── CMakeLists.txt
-│   ├── package.xml
-│   ├── include/
-│   │   └── CrabSteeringPlugin.hpp
-│   └── src/
-│       └── CrabSteeringPlugin.cpp
-└── drive/                     # Robot model & launch package
-    ├── CMakeLists.txt
-    ├── package.xml
-    ├── launch/
-    │   ├── gazebo.launch.py
-    │   └── display.launch.py
-    ├── models/
-    │   └── drive/
-    │       ├── urdf/drive.urdf
-    │       └── meshes/…
-    ├── worlds/maze.sdf
-    └── scripts/
-        ├── drive_node.py
-        └── subscriber.cpp
 
-Clone this repo into your workspace’s src/ directory:
-
-mkdir -p ~/nav2_ws
-cd ~/nav2_ws
-git clone https://github.com/KushKuk/nav2_ws.git
-
-Install system dependencies:
-
+Install dependencies:
 sudo apt update
-sudo apt install ros-humble-ignition-gazebo6 ros-humble-rclcpp ros-humble-geometry-msgs
+sudo apt install ros-humble-ros2-control ros-humble-ros2-controllers ros-humble-gazebo-ros2-control
+sudo apt install ros-humble-ros-gz-sim ros-humble-ros-gz-bridge
+sudo apt install ros-humble-robot-state-publisher ros-humble-teleop-twist-keyboard
 
-Build & source:
+Setup
 
+Clone Repository:
+mkdir -p ~/nav2_ws/src
+cd ~/nav2_ws/src
+git clone <repository_url> drive
+
+
+Update maze.sdf:
+
+Add physics parameters to drive/worlds/maze.sdf:<world name="maze_world">
+  <physics>
+    <real_time_update_rate>50</real_time_update_rate>
+    <max_step_size>0.02</max_step_size>
+  </physics>
+  ...
+</world>
+
+
+
+
+Verify drive_node.py:
+
+Ensure drive_node.py is in drive/scripts/ and listed in drive/setup.py:from setuptools import setup
+...
+setup(
+    ...
+    scripts=['scripts/drive_node.py'],
+    ...
+)
+
+
+If unavailable, use teleop_twist_keyboard by modifying drive/launch/ros2_control.launch.py:teleop_node = Node(
+    package='teleop_twist_keyboard',
+    executable='teleop_twist_keyboard',
+    name='teleop_twist_keyboard',
+    parameters=[{'use_sim_time': True}],
+    output='screen',
+    remappings=[('cmd_vel', '/cmd_vel')]
+)
+
+
+
+
+Build Workspace:
 cd ~/nav2_ws
-colcon build --symlink-install
+colcon build
 source install/setup.bash
 
-Package: crab_steering_plugin
-What It Does
 
-    Implements a System Plugin for Ignition Gazebo 6 (ign gazebo).
-
-    Finds all joints with names containing "steer" and "wheel".
-
-    Subscribes to /cmd_vel (ROS 2) messages.
-
-    Computes a desired steering angle (atan2(linearY, |linearX|)).
-
-    Runs a simple PID loop per steering joint to command joint‐velocity (JointVelocityCmd) toward that angle.
-
-    Commands wheel joints to spin at the requested speed (from sqrt(linearX² + linearY²)).
 
 Usage
 
-    Include in your robot’s SDF/URDF:
+Launch Simulation:
+ros2 launch drive ros2_control.launch.py
 
-    <gazebo>
-        <plugin name="crab_steering" filename="libcrab_steering_plugin.so"/>
-    </gazebo>
 
-Ensure your GAZEBO_PLUGIN_PATH (or IGN_GAZEBO_SYSTEM_PLUGIN_PATH) includes:
+Starts Ignition Gazebo with maze.sdf.
+Spawns the rover at (0, 0, 0.7) in the start room.
+Initializes ros2_control with drive_controller and steer_controller.
+Runs ackermann_cmd_vel_converter to process /cmd_vel.
+Launches drive_node.py for keyboard control.
 
-    ~/nav2_ws/install/crab_steering_plugin/lib
 
-Launch Gazebo with your world/URDF and send /cmd_vel via ROS 2.
+Control Rover:
 
-Plugin Parameters (SDF)
+Use drive_node.py’s keyboard bindings (e.g., arrow keys for linear.x, angular.z).
+If using teleop_twist_keyboard:
+i: Move forward (linear.x > 0).
+,: Move backward (linear.x < 0).
+j: Turn left (angular.z > 0).
+l: Turn right (angular.z < 0).
 
-In this version PID gains are hardcoded in CrabSteeringPlugin.hpp.
-To expose them via SDF, add elements under the <plugin> tag and parse in Configure().
 
-Package: drive
-What It Does
+Monitor /cmd_vel:ros2 topic echo /cmd_vel
 
-    Provides a robot_description (URDF) for a six‑wheeled “drive” model with IMU & LiDAR.
 
-    Launch files to spawn the robot in an Ignition Gazebo world.
 
-    A simple C++ subscriber.cpp that listens to /cmd_vel and prints the values.
 
-    A Python drive_node.py placeholder for future robot control.
+Debug with Subscriber:
+ros2 run drive subscriber
 
-Usage
 
-    Launch Gazebo:
+Prints linear.x and angular.z from /cmd_vel.
 
-    ros2 launch drive gazebo.launch.py
 
-    This will:
+Monitor Outputs:
+ros2 topic echo /drive_controller/commands  # Wheel velocities
+ros2 topic echo /steer_controller/commands  # Steering angles
+ros2 topic echo /joint_states               # Joint states
+ros2 topic echo /scan                      # LiDAR data
+ros2 topic echo /imu/data                  # IMU data
 
-    Start robot_state_publisher, joint_state_publisher
 
-    Spawn the robot in worlds/maze.sdf via ros_gz_sim
+Visualize in RViz:
+ros2 launch drive display.launch.py
 
-    Display Visualization:
 
-    ros2 launch drive display.launch.py
+Displays the rover model, joint states, LiDAR scans, and IMU data.
 
-    Brings up RViz2 with the robot’s TF & sensors.
 
-    Launching the Robot
 
-    gazebo.launch.py — spawns your drive.urdf in maze.sdf.
+Control Pipeline
 
-    display.launch.py — runs RViz2 to show TF & LaserScan.
+Input: drive_node.py publishes geometry_msgs::msg::Twist on /cmd_vel (linear.x, angular.z).
+Conversion: ackermann_cmd_vel_converter translates /cmd_vel to:
+/drive_controller/commands (std_msgs::msg::Float64MultiArray): Wheel angular velocities (rad/s).
+/steer_controller/commands: Steering angles (radians, ±1.047 rad max).
 
-Testing with cmd_vel
 
-    Run the C++ subscriber:
+Control: ros2_control (via gazebo_ros2_control plugin) applies commands to joint_wheel_* and joint_rotate_* joints.
+Feedback: JointStatePublisher plugin publishes /joint_states for visualization and navigation.
+Sensors: IMU (/imu/data) and LiDAR (/scan) provide data for potential navigation tasks.
 
-    ros2 run drive subscriber
+Troubleshooting
 
-    Publish through drive_node
+Rover Doesn’t Move:
 
-    ros2 run drive_node
+Check Gazebo logs for plugin errors.
+Verify /drive_controller/commands has non-zero values:ros2 topic echo /drive_controller/commands
 
-    Use WASD to control crab steered 6 rover.
 
-    PID Tuning
+Ensure ros2_control_node activates controllers (check terminal output).
+Confirm use_sim_time is set in ros2_control.launch.py and rover_controllers.yaml.
 
-The default PID gains in CrabSteeringPlugin.hpp:
 
-pid.kp = 5.0;
-pid.ki = 0.0;
-pid.kd = 0.2;
+Pylance Errors:
 
-    Increase kp for faster response.
+If drive_urdf is undefined, ensure urdf_path is used correctly in ros2_control.launch.py (see fixed version).
 
-    Increase kd to damp oscillations.
 
-    Add ki only if steady‐state error persists.
+Keyboard Control Issues:
 
-    License
+Verify drive_node.py is executable and publishes to /cmd_vel.
+Use ros2 run teleop_twist_keyboard teleop_twist_keyboard as a fallback.
+Run ros2 run drive subscriber to debug /cmd_vel.
 
-This project is released under the MIT License — see LICENSE for details.
 
-NOTE:
+Simulation Jitter:
 
-Add to .bashrc or .zshrc:
+Confirm maze.sdf has <real_time_update_rate>50</real_time_update_rate> and <max_step_size>0.02</max_step_size>.
 
-source ~/nav2_ws/install/setup.bash
 
-export GAZEBO_PLUGIN_PATH=/usr/lib/x86_64-linux-gnu/ign-gazebo-6/plugins:~/nav2_ws/install/crab_steering_plugin/lib:$GAZEBO_PLUGIN_PATH
-export IGN_GAZEBO_PLUGIN_PATH=~/nav2_ws/install/crab_steering_plugin/lib:$IGN_GAZEBO_PLUGIN_PATH
-export IGN_GAZEBO_RESOURCE_PATH=~/nav2_ws/src/drive/models:$IGN_GAZEBO_RESOURCE_PATH
+Joint Order:
+
+If steering or wheel commands are incorrect, check joint_names_drive.yaml (if used) matches drive.urdf order: [front left, front right, middle left, middle right, rear left, rear right].
+
+
+
+Future Work
+
+Autonomous Navigation: Integrate Nav2 for maze navigation using /scan, /imu/data, /joint_states, and odometry.
+Odometry: Add an odometry publisher (e.g., robot_localization) for pose estimation.
+Custom Teleop: Enhance drive_node.py with adjustable speed or additional controls.
+
+License
+This project is licensed under the MIT License. See the LICENSE file for details.
+Contact
+For issues or contributions, open a GitHub issue or contact the repository maintainer.
