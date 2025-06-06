@@ -19,7 +19,7 @@ This package provides a complete simulation and control system for a 6-wheeled r
 If you want just teleop without full simulation:
 
 ```bash
-cd /home/ujjwal/nav2_ws
+cd ~/nav2_ws
 source install/setup.bash
 
 # Terminal 1: Launch simulation
@@ -132,7 +132,7 @@ ros2 topic echo /joint_states
 ### Run Status Monitor
 
 ```bash
-cd /home/ujjwal/nav2_ws
+cd ~/nav2_ws
 source install/setup.bash
 python3 src/drive/scripts/rover_controller.py
 ```
