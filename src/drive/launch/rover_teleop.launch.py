@@ -132,7 +132,7 @@ def generate_launch_description():
                 ExecuteProcess(
                     cmd=[
                         'gnome-terminal', '--', 'bash', '-c', 
-                        'source /home/ujjwal/nav2_ws/install/setup.bash && '
+                        'source /home/kush/nav2_ws/install/setup.bash && '
                         'echo "=== ROVER TELEOP CONTROL ===" && '
                         'echo "Use these keys to control the rover:" && '
                         'echo "  w/x: forward/backward" && '

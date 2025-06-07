@@ -7,7 +7,6 @@ import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import Twist
 import time
-import math
 
 class RoverMovementTest(Node):
     def __init__(self):

@@ -44,111 +44,104 @@
   </link>
 
 <!-- IMU Sensor -->
-<link name="imu_link">
-  <inertial>
-    <mass value="0.01" />
-    <inertia>
-      <ixx>1e-5</ixx>
-      <iyy>1e-5</iyy>
-      <izz>1e-5</izz>
-      <ixy>0.0</ixy>
-      <ixz>0.0</ixz>
-      <iyz>0.0</iyz>
-    </inertia>
-  </inertial>
-  <visual name="imu_vis">
-    <geometry>
-      <box><size>0.01 0.01 0.01</size></box>
-    </geometry>
-  </visual>
-  <collision name="imu_col">
-    <geometry>
-      <box><size>0.01 0.01 0.01</size></box>
-    </geometry>
-  </collision>
-
+  <link name="imu_link">
+    <inertial>
+      <mass value="0.01"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertia ixx="1e-5" ixy="0.0" ixz="0.0" iyy="1e-5" iyz="0.0" izz="1e-5"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <box size="0.01 0.01 0.01"/>
+      </geometry>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.01 0.01 0.01"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="imu_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="imu_link"/>
+    <origin xyz="0 0 0.1" rpy="0 0 0"/>
+  </joint>
   <gazebo reference="imu_link">
     <sensor name="imu_sensor" type="imu">
       <pose>0 0 0 0 0 0</pose>
       <update_rate>50</update_rate>
       <always_on>true</always_on>
       <visualize>true</visualize>
-      <plugin
-        name="ignition::gazebo::systems::Imu"
-        filename="libignition-gazebo-imu-system.so"/>
+      <topic>/imu/data</topic>
+      <imu>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.0002</stddev>
+        </noise>
+      </imu>
+      <plugin filename="libignition-gazebo-imu-system.so"
+        name="ignition::gazebo::systems::Imu">
+        <topic>/imu</topic>
+      </plugin>
     </sensor>
   </gazebo>
-</link>
-
-<joint name="imu_joint" type="fixed">
-  <parent link="base_link"/>
-  <child link="imu_link"/>
-  <pose>0 0 0.1 0 0 0</pose>
-</joint>
 
 <!-- LiDAR Sensor -->
 <link name="lidar_link">
-  <inertial>
-    <mass value="0.01" />
-    <inertia>
-      <ixx>1e-5</ixx>
-      <iyy>1e-5</iyy>
-      <izz>1e-5</izz>
-      <ixy>0.0</ixy>
-      <ixz>0.0</ixz>
-      <iyz>0.0</iyz>
-    </inertia>
-  </inertial>
-  <visual name="lidar_vis">
-    <geometry>
-      <cylinder>
-        <radius>0.03</radius>
-        <length>0.02</length>
-      </cylinder>
-    </geometry>
-  </visual>
-  <collision name="lidar_col">
-    <geometry>
-      <cylinder>
-        <radius>0.03</radius>
-        <length>0.02</length>
-      </cylinder>
-    </geometry>
-  </collision>
-
+    <inertial>
+      <mass value="0.01"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertia ixx="1e-5" ixy="0.0" ixz="0.0" iyy="1e-5" iyz="0.0" izz="1e-5"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <cylinder radius="0.03" length="0.02"/>
+      </geometry>
+    </visual>
+    <collision>
+      <geometry>
+        <cylinder radius="0.03" length="0.02"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="lidar_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="lidar_link"/>
+    <origin xyz="0 0 0.2" rpy="0 0 0"/>
+  </joint>
   <gazebo reference="lidar_link">
-    <sensor name="lidar_sensor" type="gpu_lidar">
-      <pose>0 0 0 0 0 0</pose>
-      <update_rate>10</update_rate>
-      <always_on>true</always_on>
-      <visualize>true</visualize>
-      <ray>
+<sensor name='gpu_lidar' type='gpu_lidar'>"
+    <pose relative_to='lidar_frame'>0 0 0 0 0 0</pose>
+    <topic>lidar</topic>
+    <update_rate>10</update_rate>
+    <ray>
         <scan>
-          <horizontal>
-            <samples>360</samples>
-            <resolution>1</resolution>
-            <min_angle>-3.14</min_angle>
-            <max_angle>3.14</max_angle>
-          </horizontal>
+            <horizontal>
+                <samples>640</samples>
+                <resolution>1</resolution>
+                <min_angle>-1.396263</min_angle>
+                <max_angle>1.396263</max_angle>
+            </horizontal>
+            <vertical>
+                <samples>1</samples>
+                <resolution>0.01</resolution>
+                <min_angle>0</min_angle>
+                <max_angle>0</max_angle>
+            </vertical>
         </scan>
         <range>
-          <min>0.2</min>
-          <max>10.0</max>
-          <resolution>0.01</resolution>
+            <min>0.08</min>
+            <max>10.0</max>
+            <resolution>0.01</resolution>
         </range>
-      </ray>
-      <plugin
-        name="ignition::gazebo::systems::Lidar"
-        filename="libignition-gazebo-lidar-system.so"/>
-    </sensor>
+    </ray>
+    <always_on>1</always_on>
+    <visualize>true</visualize>
+</sensor>
   </gazebo>
-</link>
 
-<joint name="lidar_joint" type="fixed">
-  <parent link="base_link"/>
-  <child link="lidar_link"/>
-  <pose>0 0 0.2 0 0 0</pose>
-</joint>
+<!-- Wheel and Suspension Joints -->
 
   <link
     name="rotate_1">
@@ -916,7 +909,7 @@
   <gazebo>
     <!-- ROS2 Control Plugin -->
     <plugin filename="libign_ros2_control-system.so" name="ign_ros2_control::IgnitionROS2ControlPlugin">
-      <parameters>/home/ujjwal/nav2_ws/src/drive/models/drive/config/rover_controllers.yaml</parameters>
+      <parameters>/home/kush/nav2_ws/src/drive/models/drive/config/rover_controllers.yaml</parameters>
       <ros>
         <namespace>/</namespace>
       </ros>
@@ -940,32 +933,5 @@
       <joint_name>joint_rotate_6</joint_name>
     </plugin>
   </gazebo>
-
-<!-- <gazebo>
-    <plugin
-      filename="libignition-gazebo-joint-state-publisher-system.so"
-      name="ignition::gazebo::systems::JointStatePublisher">
-      <joint_name>joint_wheel_1</joint_name>
-      <joint_name>joint_wheel_2</joint_name>
-      <joint_name>joint_wheel_3</joint_name>
-      <joint_name>joint_wheel_4</joint_name>
-      <joint_name>joint_wheel_5</joint_name>
-      <joint_name>joint_wheel_6</joint_name>
-      <joint_name>joint_rotate_1</joint_name>
-      <joint_name>joint_rotate_2</joint_name>
-      <joint_name>joint_rotate_3</joint_name>
-      <joint_name>joint_rotate_4</joint_name>
-      <joint_name>joint_rotate_5</joint_name>
-      <joint_name>joint_rotate_6</joint_name>
-      <ros>
-        <republish>
-          <topic>/joint_states</topic>
-          <inittial_qos>1</inittial_qos>
-          <qos_profile>sensor_data</qos_profile>
-        </republish>
-      </ros>
-    </plugin>
-    <plugin name="crab_steering" filename="/home/kush/nav2_ws/install/crab_steering_plugin/lib/libcrab_steering_plugin.so"/>
-  </gazebo> -->
 
 </robot>

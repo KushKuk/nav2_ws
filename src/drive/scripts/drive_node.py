@@ -16,7 +16,7 @@ class CrabSteeringTeleop(Node):
         super().__init__('crab_steering_teleop')
         self.pub = self.create_publisher(Twist, 'cmd_vel', 10)
         self.linear_x = 0.0
-        self.linear_y = 0.0
+        self.angular_z = 0.0
 
         self.get_logger().info("Crab Steering Teleop started. Use WASD to move, Space to stop.")
 
@@ -32,7 +32,7 @@ class CrabSteeringTeleop(Node):
     def publish_twist(self):
         msg = Twist()
         msg.linear.x = self.linear_x
-        msg.linear.y = self.linear_y
+        msg.angular.z = self.angular_z
         self.pub.publish(msg)
 
     def key_listener(self):
@@ -50,23 +50,23 @@ class CrabSteeringTeleop(Node):
     def process_key(self, key):
         if key == 'w':
             self.linear_x = speed
-            self.linear_y = 0.0
+            self.angular_z = 0.0
             self.get_logger().info("Forward")
         elif key == 's':
             self.linear_x = -speed
-            self.linear_y = 0.0
+            self.angular_z = 0.0
             self.get_logger().info("Backward")
         elif key == 'a':
-            self.linear_y = speed
+            self.angular_z = -speed
             self.linear_x = 0.0
             self.get_logger().info("Left (Crab)")
         elif key == 'd':
-            self.linear_y = -speed
+            self.angular_z = speed
             self.linear_x = 0.0
             self.get_logger().info("Right (Crab)")
         elif key == ' ':
             self.linear_x = 0.0
-            self.linear_y = 0.0
+            self.angular_z = 0.0
             self.get_logger().info("Stop")
         elif key == '\x03':  # CTRL+C
             self.running = False
