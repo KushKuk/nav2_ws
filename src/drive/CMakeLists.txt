@@ -49,10 +49,14 @@ install(TARGETS subscriber
 
 # Export dependencies
 ament_package()
+
 # Install additional Python scripts for rover control
 install(PROGRAMS
+  scripts/odometry_publisher.py
+  scripts/drive_node.py
   scripts/rover_controller.py
   scripts/test_rover_movement.py
   scripts/rover_status_monitor.py
+  scripts/test_differential_steering.py
   DESTINATION lib/${PROJECT_NAME}
 )

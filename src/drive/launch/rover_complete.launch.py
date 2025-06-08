@@ -89,6 +89,12 @@ def generate_launch_description():
                 Node(
                     package='controller_manager',
                     executable='spawner',
+                    arguments=['joint_state_broadcaster'],
+                    output='screen'
+                ),
+                Node(
+                    package='controller_manager',
+                    executable='spawner',
                     arguments=['drive_controller'],
                     output='screen'
                 ),
@@ -101,7 +107,7 @@ def generate_launch_description():
             ]
         ),
         
-        # Differential Steering Converter - CORE FUNCTIONALITY
+        # Differential Steering Converter
         TimerAction(
             period=10.0,
             actions=[
@@ -110,22 +116,39 @@ def generate_launch_description():
                     executable='ackermann_cmd_vel_converter',
                     name='ackermann_cmd_vel_converter',
                     parameters=[
-                        {'wheel_radius': 0.1125},           # Wheel radius from URDF
-                        {'max_steering_angle': 1.047},      # 60 degrees max steering
-                        {'robot_length': 1.0},              # Distance between front/rear axles
-                        {'robot_width': 0.54}               # Distance between left/right wheels
+                        {'wheel_radius': 0.1125},
+                        {'max_steering_angle': 1.047},
+                        {'robot_length': 1.0},
+                        {'robot_width': 0.54}
                     ],
                     output='screen',
                     remappings=[
-                        ('/cmd_vel', '/cmd_vel'),                              # Input: velocity commands
-                        ('/drive_controller/commands', '/drive_controller/commands'),  # Output: wheel speeds
-                        ('/steer_controller/commands', '/steer_controller/commands')   # Output: steering angles
+                        ('/cmd_vel', '/cmd_vel'),
+                        ('/drive_controller/commands', '/drive_controller/commands'),
+                        ('/steer_controller/commands', '/steer_controller/commands')
                     ]
                 )
             ]
         ),
 
-        # Status Monitor - provides feedback WITHOUT sending commands
+        # Odometry Publisher
+        TimerAction(
+            period=11.0,
+            actions=[
+                Node(
+                    package='drive',
+                    executable='odometry_publisher.py',
+                    name='odometry_publisher',
+                    parameters=[
+                        {'wheel_radius': 0.1125},
+                        {'wheel_separation': 0.54}
+                    ],
+                    output='screen'
+                )
+            ]
+        ),
+
+        # Status Monitor
         TimerAction(
             period=12.0,
             actions=[
