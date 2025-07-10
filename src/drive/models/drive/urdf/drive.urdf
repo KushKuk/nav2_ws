@@ -111,7 +111,7 @@
     <origin xyz="0 0 0.2" rpy="0 0 0"/>
   </joint>
   <gazebo reference="lidar_link">
-<sensor name='gpu_lidar' type='gpu_lidar'>"
+<sensor name='gpu_lidar' type='gpu_lidar'>
     <pose relative_to='lidar_frame'>0 0 0 0 0 0</pose>
     <topic>lidar</topic>
     <update_rate>10</update_rate>
@@ -909,7 +909,7 @@
   <gazebo>
     <!-- ROS2 Control Plugin -->
     <plugin filename="libign_ros2_control-system.so" name="ign_ros2_control::IgnitionROS2ControlPlugin">
-      <parameters>/home/kush/nav2_ws/src/drive/models/drive/config/rover_controllers.yaml</parameters>
+      <parameters>/home/ujjwal/nav2_ws/src/drive/models/drive/config/rover_controllers.yaml</parameters>
       <ros>
         <namespace>/</namespace>
       </ros>

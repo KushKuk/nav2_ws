@@ -46,72 +46,52 @@ void AckermannCmdVelConverter::cmdVelCallback(const geometry_msgs::msg::Twist::S
     double linear_x = msg->linear.x;
     double angular_z = msg->angular.z;
 
-    // Calculate individual wheel velocities and steering angles
+    // Wheel rotational speeds (rad/s)
     std::vector<double> wheel_speeds(6, 0.0);
+
+    // Steering angles are unused in skid steering but kept for compatibility (always 0)
     std::vector<double> steering_angles(6, 0.0);
 
-    if (std::abs(angular_z) < 1e-6) {
-        // Pure forward/backward motion - all wheels same speed, zero steering
-        std::fill(wheel_speeds.begin(), wheel_speeds.end(), linear_x / wheel_radius_);
-        std::fill(steering_angles.begin(), steering_angles.end(), 0.0);
-    } else {
-        // Calculate instantaneous center of rotation (ICR)
-        double icr_x = 0.0;  // ICR on the y-axis for pure rotation about center
-        double icr_y = linear_x / angular_z;  // Distance from robot center to ICR
-        
-        // Calculate individual wheel parameters
-        for (size_t i = 0; i < 6; ++i) {
-            double wheel_x = wheel_positions_[i].first;
-            double wheel_y = wheel_positions_[i].second;
-            
-            // Vector from ICR to wheel
-            double dx = wheel_x - icr_x;
-            double dy = wheel_y - icr_y;
-            
-            // Distance from ICR to wheel
-            double radius = std::sqrt(dx * dx + dy * dy);
-            
-            // Wheel velocity magnitude
-            double wheel_velocity = angular_z * radius;
-            
-            // Convert to wheel rotational speed (rad/s)
-            wheel_speeds[i] = wheel_velocity / wheel_radius_;
-            
-            // Steering angle - direction from wheel to ICR
-            if (std::abs(radius) > 1e-6) {
-                steering_angles[i] = std::atan2(-dx, -dy);
-                
-                // Limit steering angle
-                steering_angles[i] = std::max(-max_steering_angle_, 
-                                            std::min(max_steering_angle_, steering_angles[i]));
-            } else {
-                steering_angles[i] = 0.0;
-            }
-        }
-    }
+    // Calculate linear speeds of left and right wheels
+    double half_width = robot_width_ / 2.0;
 
-    // Publish commands
+    double left_linear = linear_x - (angular_z * half_width);
+    double right_linear = linear_x + (angular_z * half_width);
+
+    // Convert to angular velocity (rad/s) for wheels
+    double left_speed = left_linear / wheel_radius_;
+    double right_speed = right_linear / wheel_radius_;
+
+    // Assign speeds based on left/right wheels
+    // Left wheels: 0, 2, 4
+    wheel_speeds[0] = left_speed;
+    wheel_speeds[2] = left_speed;
+    wheel_speeds[4] = left_speed;
+
+    // Right wheels: 1, 3, 5
+    wheel_speeds[1] = right_speed;
+    wheel_speeds[3] = right_speed;
+    wheel_speeds[5] = right_speed;
+
+    // Publish drive and zero steering
     std_msgs::msg::Float64MultiArray drive_msg;
     std_msgs::msg::Float64MultiArray steer_msg;
-    
+
     drive_msg.data = wheel_speeds;
     steer_msg.data = steering_angles;
 
     drive_pub_->publish(drive_msg);
     steer_pub_->publish(steer_msg);
 
-    // Log the commands for debugging
-    RCLCPP_DEBUG(this->get_logger(), 
-                "Cmd: vx=%.2f, wz=%.2f", linear_x, angular_z);
+    // Debug logging
     RCLCPP_DEBUG(this->get_logger(),
-                "Speeds: [%.2f, %.2f, %.2f, %.2f, %.2f, %.2f]",
+                "Skid Cmd: vx=%.2f, wz=%.2f", linear_x, angular_z);
+    RCLCPP_DEBUG(this->get_logger(),
+                "Wheel Speeds (rad/s): [%.2f, %.2f, %.2f, %.2f, %.2f, %.2f]",
                 wheel_speeds[0], wheel_speeds[1], wheel_speeds[2],
                 wheel_speeds[3], wheel_speeds[4], wheel_speeds[5]);
-    RCLCPP_DEBUG(this->get_logger(),
-                "Angles: [%.2f, %.2f, %.2f, %.2f, %.2f, %.2f]",
-                steering_angles[0], steering_angles[1], steering_angles[2],
-                steering_angles[3], steering_angles[4], steering_angles[5]);
 }
+
 
 }  // namespace differential_steering
 
