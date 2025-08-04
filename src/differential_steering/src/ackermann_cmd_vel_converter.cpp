@@ -43,8 +43,12 @@ AckermannCmdVelConverter::AckermannCmdVelConverter()
 
 void AckermannCmdVelConverter::cmdVelCallback(const geometry_msgs::msg::Twist::SharedPtr msg)
 {
-    double linear_x = msg->linear.x;
+  double linear_x = msg->linear.x;
     double angular_z = msg->angular.z;
+    
+    linear_x=linear_x*-1;
+    
+    
 
     // Wheel rotational speeds (rad/s)
     std::vector<double> wheel_speeds(6, 0.0);
@@ -54,34 +58,68 @@ void AckermannCmdVelConverter::cmdVelCallback(const geometry_msgs::msg::Twist::S
 
     // Calculate linear speeds of left and right wheels
     double half_width = robot_width_ / 2.0;
+    double left_linear = 0;
+    double right_linear = 0;
+    if (linear_x==0 and angular_z!=0)
+    {
+    if (angular_z>0)
+    {
+        left_linear = -(angular_z * half_width);
+        right_linear = angular_z * half_width;
+        //only right wheels move now
 
-    double left_linear = linear_x - (angular_z * half_width);
-    double right_linear = linear_x + (angular_z * half_width);
+    }
+    else
+    {
+        right_linear = angular_z * half_width;
+        left_linear = -(angular_z * half_width);
+        //only left wheels move now
+        
+    }
+    
+    
 
     // Convert to angular velocity (rad/s) for wheels
     double left_speed = left_linear / wheel_radius_;
     double right_speed = right_linear / wheel_radius_;
 
     // Assign speeds based on left/right wheels
-    // Left wheels: 0, 2, 4
-    wheel_speeds[0] = left_speed;
-    wheel_speeds[2] = left_speed;
+    
+    wheel_speeds[3] = left_speed;
     wheel_speeds[4] = left_speed;
+    wheel_speeds[5] = left_speed;
 
-    // Right wheels: 1, 3, 5
-    wheel_speeds[1] = right_speed;
-    wheel_speeds[3] = right_speed;
-    wheel_speeds[5] = right_speed;
+    
+    wheel_speeds[0] = -right_speed;
+    wheel_speeds[1] = -right_speed;
+    wheel_speeds[2] = right_speed;
+      
 
+    
+    }
+    if (linear_x!=0 and angular_z==0)
+    {
+
+    wheel_speeds[0] = -linear_x;
+    wheel_speeds[2] = linear_x;
+    wheel_speeds[4] = linear_x;
+    wheel_speeds[1] = -linear_x;
+    wheel_speeds[3] = linear_x;
+    wheel_speeds[5] = linear_x;
+    //now every wheel have same speed and direction
+    }
+
+    
+    
+
+    
     // Publish drive and zero steering
     std_msgs::msg::Float64MultiArray drive_msg;
-    std_msgs::msg::Float64MultiArray steer_msg;
 
     drive_msg.data = wheel_speeds;
-    steer_msg.data = steering_angles;
 
     drive_pub_->publish(drive_msg);
-    steer_pub_->publish(steer_msg);
+    
 
     // Debug logging
     RCLCPP_DEBUG(this->get_logger(),
@@ -90,10 +128,11 @@ void AckermannCmdVelConverter::cmdVelCallback(const geometry_msgs::msg::Twist::S
                 "Wheel Speeds (rad/s): [%.2f, %.2f, %.2f, %.2f, %.2f, %.2f]",
                 wheel_speeds[0], wheel_speeds[1], wheel_speeds[2],
                 wheel_speeds[3], wheel_speeds[4], wheel_speeds[5]);
+
+
 }
-
-
-}  // namespace differential_steering
+}  
+// namespace differential_steering
 
 int main(int argc, char * argv[])
 {

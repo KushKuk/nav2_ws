@@ -58,5 +58,6 @@ install(PROGRAMS
   scripts/test_rover_movement.py
   scripts/rover_status_monitor.py
   scripts/test_differential_steering.py
+  scripts/rover_diagnostics.py
   DESTINATION lib/${PROJECT_NAME}
 )

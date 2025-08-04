@@ -1,9 +1,6 @@
 controller_manager:
   ros__parameters:
     update_rate: 50
-    
-    joint_state_broadcaster:
-      type: joint_state_broadcaster/JointStateBroadcaster
 
     drive_controller:
       type: velocity_controllers/JointGroupVelocityController
@@ -25,10 +22,8 @@ drive_controller:
 steer_controller:
   ros__parameters:
     joints:
-      - joint_rotate_1
-      - joint_rotate_2
-      - joint_rotate_3
-      - joint_rotate_4
-      - joint_rotate_5
-      - joint_rotate_6
+      - joint_right_front
+      - joint_right_back
+      - joint_left_front
+      - joint_left_back
     interface_name: position

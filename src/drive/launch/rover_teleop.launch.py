@@ -54,51 +54,29 @@ def generate_launch_description():
 
         # Delay the spawn to ensure Gazebo is ready
         TimerAction(
-            period=3.0,
-            actions=[
-                Node(
-                    package='ros_gz_sim',
-                    executable='create',
-                    arguments=[
-                        '-name', 'drive',
-                        '-topic', 'robot_description',
-                        '-x', '0', '-y', '0', '-z', '0.7'
-                    ],
-                    output='screen'
-                )
-            ]
+    period=3.0,
+    actions=[
+        Node(
+            package='ros_gz_sim',
+            executable='create',
+            arguments=[
+                '-name', 'drive',
+                '-topic', 'robot_description',
+                '-x', '0', '-y', '0', '-z', '1',
+                '-R', '0', '-P', '3.14', '-Y', '0'
+            ],
+            output='screen'
+        )
+    ]
+
+
         ),
 
-        # ROS2 Control - delayed to ensure the robot is spawned first
-        TimerAction(
-            period=5.0,
-            actions=[
-                Node(
-                    package='controller_manager',
-                    executable='ros2_control_node',
-                    parameters=[controller_config],
-                    output='screen'
-                )
-            ]
-        ),
-
-        # Controller Spawners - delayed further to ensure ros2_control is ready
-        TimerAction(
-            period=8.0,
-            actions=[
-                Node(
-                    package='controller_manager',
-                    executable='spawner',
-                    arguments=['drive_controller'],
-                    output='screen'
-                ),
-                Node(
-                    package='controller_manager',
-                    executable='spawner',
-                    arguments=['steer_controller'],
-                    output='screen'
-                )
-            ]
+        # ROS2 Control
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(
+                os.path.join(drive_share_dir, 'launch', 'ros2_control.launch.py')
+            )
         ),
         
         # Differential Steering Converter - CORE FUNCTIONALITY
@@ -134,12 +112,6 @@ def generate_launch_description():
                         'gnome-terminal', '--', 'bash', '-c', 
                         'source /home/ujjwal/nav2_ws/install/setup.bash && '
                         'echo "=== ROVER TELEOP CONTROL ===" && '
-                        'echo "Use these keys to control the rover:" && '
-                        'echo "  w/x: forward/backward" && '
-                        'echo "  a/d: turn left/right" && '
-                        'echo "  s: stop" && '
-                        'echo "  CTRL+C: exit" && '
-                        'echo "" && '
                         'echo "Differential steering is ACTIVE" && '
                         'echo "Press any key to start..." && read && '
                         'ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args --remap cmd_vel:=/cmd_vel'

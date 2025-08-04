@@ -115,17 +115,11 @@ def generate_launch_description():
                     package='differential_steering',
                     executable='ackermann_cmd_vel_converter',
                     name='ackermann_cmd_vel_converter',
-                    parameters=[
-                        {'wheel_radius': 0.1125},
-                        {'max_steering_angle': 1.047},
-                        {'robot_length': 1.0},
-                        {'robot_width': 0.54}
-                    ],
+                    
                     output='screen',
                     remappings=[
                         ('/cmd_vel', '/cmd_vel'),
                         ('/drive_controller/commands', '/drive_controller/commands'),
-                        ('/steer_controller/commands', '/steer_controller/commands')
                     ]
                 )
             ]

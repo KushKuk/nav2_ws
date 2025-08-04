@@ -1,1 +1,1 @@
-controller_joint_names: ['', 'rotate_1', 'wheel_1', 'rotate_2', 'wheel_2', 'rotate_3', 'wheel_3', 'rotate_4', 'wheel_4', 'rotate_5', 'wheel_5', 'rotate_6', 'wheel_6', ]
+controller_joint_names: [ 'joint_right_front', 'joint_right_bogie', 'joint_wheel_1', 'joint_wheel_2', 'joint_right_back', 'joint_wheel_3', 'joint_left_front', 'joint_left_bogie', 'joint_wheel_4', 'joint_wheel_5', 'joint_left_back', 'joint_wheel_6', ]
