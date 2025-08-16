@@ -25,35 +25,10 @@ install(DIRECTORY models/
   DESTINATION share/${PROJECT_NAME}/models
 )
 
-# Install Python script (e.g., drive_node.py)
+# Install Python scripts
 install(PROGRAMS
   scripts/drive_node.py
-  DESTINATION lib/${PROJECT_NAME}
-)
-
-# If you have a C++ executable (e.g., subscriber.cpp), add it here:
-add_executable(subscriber
-  scripts/subscriber.cpp
-)
-
-# Link dependencies for C++ executable
-ament_target_dependencies(subscriber
-  rclcpp
-  geometry_msgs
-)
-
-# Install the C++ executable
-install(TARGETS subscriber
-  DESTINATION lib/${PROJECT_NAME}
-)
-
-# Export dependencies
-ament_package()
-
-# Install additional Python scripts for rover control
-install(PROGRAMS
   scripts/odometry_publisher.py
-  scripts/drive_node.py
   scripts/rover_controller.py
   scripts/test_rover_movement.py
   scripts/rover_status_monitor.py
@@ -61,3 +36,6 @@ install(PROGRAMS
   scripts/rover_diagnostics.py
   DESTINATION lib/${PROJECT_NAME}
 )
+
+# Export dependencies
+ament_package()

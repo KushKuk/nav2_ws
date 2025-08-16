@@ -4,7 +4,7 @@
   <name>differential_steering</name>
   <version>0.0.0</version>
   <description>Ackermann steering command velocity converter for differential drive systems</description>
-  <maintainer email="ujjwal@todo.todo">ujjwal</maintainer>
+  <maintainer email="kush@todo.todo">kush</maintainer>
   <license>Apache-2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
