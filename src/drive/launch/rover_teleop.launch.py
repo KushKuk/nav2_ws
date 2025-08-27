@@ -99,7 +99,7 @@ def generate_launch_description():
             '-name', 'drive_rover',
             '-x', '0.0',
             '-y', '0.0',
-            '-z', '0.1'
+            '-z', '0.5'
         ],
         output='screen'
     )
@@ -152,23 +152,7 @@ def generate_launch_description():
         condition=IfCondition(use_rviz),
         output='screen'
     )
-    load_plugin=Node(
-                package='differential_steering',
-                executable='ackermann_cmd_vel_converter',
-                name='ackermann_cmd_vel_converter',
-                parameters=[
-                    {'wheel_radius': 0.1125},           
-                    {'max_steering_angle': 1.047},      
-                    {'robot_length': 1.0},              
-                    {'robot_width': 0.54}               
-                ],
-                output='screen',
-                remappings=[
-                    ('/cmd_vel', '/cmd_vel'),                              
-                    ('/drive_controller/commands', '/drive_controller/commands'),  
-                    ('/steer_controller/commands', '/steer_controller/commands')   
-                ]
-            )
+    # Removed ackermann_cmd_vel_converter as it's not needed for differential drive
     
     return LaunchDescription([
         declare_use_sim_time,
@@ -183,6 +167,5 @@ def generate_launch_description():
         controller_manager,
         load_joint_state_controller,
         load_diff_drive_controller,
-        rviz,
-        load_plugin
+        rviz
     ])
