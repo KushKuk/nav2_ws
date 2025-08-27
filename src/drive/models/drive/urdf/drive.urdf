@@ -262,11 +262,11 @@
 <link name="lidar_link">
   <inertial>
     <mass value="0.01"/>
-    <inertia ixx="1e-6" iyy="1e-6" izz="1e-6" ixy="0" ixz="0" iyz="0"/>
+    <inertia ixx="0" iyy="0" izz="0" ixy="0" ixz="0" iyz="0"/>
   </inertial>
-  <visual>
+  <visual name ="lidar_visual">
     <geometry>
-      <cylinder length="5" radius="3"/>
+      <cylinder length="0.05" radius="0.03"/>
     </geometry>
     <material>
       <color rgba="0 1 0 1"/>
@@ -274,16 +274,14 @@
   </visual>
 </link>
 
-<!-- Joint to attach to base -->
 <joint name="lidar_joint" type="fixed">
   <parent link="base"/>
   <child link="lidar_link"/>
   <origin xyz="0.3 0 0.5" rpy="0 0 0"/>
 </joint>
 
-<!-- Gazebo sensor block -->
 <gazebo reference="lidar_link">
-  <sensor name="lidar_sensor" type="gpu_lidar">
+  <sensor name="lidar_sensor" type="lidar"> <!-- try gpu_lidar later -->
     <pose>0 0 0 0 0 0</pose>
     <update_rate>20</update_rate>
     <visualize>true</visualize>
@@ -291,15 +289,15 @@
     <ray>
       <scan>
         <horizontal>
-          <samples>720</samples>      <!-- resolution -->
+          <samples>720</samples>
           <resolution>1</resolution>
-          <min_angle>-1.5708</min_angle> <!-- -90 deg -->
-          <max_angle>1.5708</max_angle>  <!-- +90 deg -->
+          <min_angle>-1.5708</min_angle>
+          <max_angle>1.5708</max_angle>
         </horizontal>
       </scan>
       <range>
-        <min>0.12</min>    <!-- meters -->
-        <max>10.0</max>    <!-- meters -->
+        <min>0.12</min>
+        <max>10.0</max>
         <resolution>0.01</resolution>
       </range>
       <noise>
@@ -310,6 +308,7 @@
     </ray>
   </sensor>
 </gazebo>
+
 
   <!-- =========================
        WHEELS (6x)
