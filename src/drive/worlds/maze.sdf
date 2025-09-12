@@ -193,6 +193,7 @@
         <visual name="vis"><geometry><box><size>6 0.2 1</size></box></geometry></visual>
       </link>
     </model>
+    <!-- Robot will be spawned separately via ROS2 -->
 
   </world>
 </sdf>

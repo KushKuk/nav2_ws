@@ -10,7 +10,7 @@
     name="spawn_model"
     pkg="gazebo_ros"
     type="spawn_model"
-    args="-file $(find drive)/urdf/drive.urdf -urdf -model drive"
+    args="-file $(find drive3)/urdf/drive3.urdf -urdf -model drive3"
     output="screen" />
   <node
     name="fake_joint_calibration"

@@ -22,16 +22,4 @@ def generate_launch_description():
                 ),
             ]
         ),
-        
-        TimerAction(
-            period=10.0,
-            actions=[
-                Node(
-                    package='controller_manager',
-                    executable='spawner',
-                    arguments=['steer_controller'],
-                    output='screen',
-                ),
-            ]
-        ),
     ])

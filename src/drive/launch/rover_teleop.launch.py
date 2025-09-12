@@ -67,13 +67,7 @@ def generate_launch_description():
         }]
     )
     
-    # Joint state publisher (for manual control if needed)
-    joint_state_publisher = Node(
-        package='joint_state_publisher',
-        executable='joint_state_publisher',
-        name='joint_state_publisher',
-        parameters=[{'use_sim_time': use_sim_time}]
-    )
+
     
     # Gazebo launch
     gazebo = IncludeLaunchDescription(
@@ -118,6 +112,11 @@ def generate_launch_description():
         parameters=[{'use_sim_time': use_sim_time}],
         output='screen'
     )
+    IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join('drive', 'launch', 'ros2_control.launch.py')
+            )
+        ),
     
     # Controller manager
     controller_manager = Node(
@@ -141,6 +140,23 @@ def generate_launch_description():
         arguments=['diff_drive_controller', '--controller-manager', '/controller_manager'],
         parameters=[{'use_sim_time': use_sim_time}]
     )
+
+    Plugin = Node(
+        package='differential_steering',
+        executable='ackermann_cmd_vel_converter',
+        name='ackermann_cmd_vel_converter',
+        parameters=[
+            {'wheel_radius': 0.1125},           
+            {'max_steering_angle': 1.047},      
+            {'robot_length': 1.0},              
+            {'robot_width': 0.54}               
+            ],
+            output='screen',
+            remappings=[
+            ('/cmd_vel', '/cmd_vel'),                              
+            ('/drive_controller/commands', '/drive_controller/commands')  
+            ]
+    )
     
     # RViz
     rviz = Node(
@@ -152,7 +168,7 @@ def generate_launch_description():
         condition=IfCondition(use_rviz),
         output='screen'
     )
-    # Removed ackermann_cmd_vel_converter as it's not needed for differential drive
+    
     
     return LaunchDescription([
         declare_use_sim_time,
@@ -161,7 +177,6 @@ def generate_launch_description():
         set_env_var,
         gazebo,
         robot_state_publisher,
-        joint_state_publisher,
         spawn_robot,
         bridge,
         controller_manager,

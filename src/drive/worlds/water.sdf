@@ -1,0 +1,205 @@
+<?xml version="1.0" ?>
+<sdf version="1.7">
+  <world name="water_tank_world">
+
+    <!-- Lighting & physics -->
+    <gravity>0 0 -9.81</gravity>
+    <magnetic_field>0 0 0</magnetic_field>
+
+    <!-- Sun and ground for reference -->
+    <include>
+      <uri>model://sun</uri>
+    </include>
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
+
+    <!-- =======================
+         Transparent Tank Model
+         ======================= -->
+    <!-- Tank outer dims: 1.04 x 1.04 x 0.84 m
+         Inner cavity for water: 1.00 x 1.00 x 0.80 m
+         Wall thickness: 0.02 m ; Bottom thickness: 0.02 m -->
+    <model name="transparent_tank">
+      <static>true</static>
+
+      <!-- Bottom plate -->
+      <link name="bottom">
+        <pose>0 0 0.01 0 0 0</pose>
+        <collision name="bottom_col">
+          <geometry>
+            <box><size>1.04 1.04 0.02</size></box>
+          </geometry>
+        </collision>
+        <visual name="bottom_vis">
+          <geometry>
+            <box><size>1.04 1.04 0.02</size></box>
+          </geometry>
+          <material>
+            <pbr>
+              <metal>
+                <albedo_map></albedo_map>
+              </metal>
+            </pbr>
+            <ambient>1 1 1 1</ambient>
+            <diffuse>1 1 1 0.15</diffuse> <!-- transparent -->
+            <specular>0.8 0.8 0.8 1</specular>
+          </material>
+          <transparency>0.85</transparency>
+        </visual>
+      </link>
+
+      <!-- Four side walls (thin boxes) -->
+      <!-- +X wall -->
+      <link name="wall_px">
+        <pose>0.51 0 0.42 0 0 0</pose>
+        <collision name="px_col">
+          <geometry>
+            <box><size>0.02 1.04 0.84</size></box>
+          </geometry>
+        </collision>
+        <visual name="px_vis">
+          <geometry>
+            <box><size>0.02 1.04 0.84</size></box>
+          </geometry>
+          <material>
+            <ambient>1 1 1 1</ambient>
+            <diffuse>1 1 1 0.10</diffuse>
+            <specular>0.8 0.8 0.8 1</specular>
+          </material>
+          <transparency>0.90</transparency>
+        </visual>
+      </link>
+
+      <!-- -X wall -->
+      <link name="wall_nx">
+        <pose>-0.51 0 0.42 0 0 0</pose>
+        <collision name="nx_col">
+          <geometry>
+            <box><size>0.02 1.04 0.84</size></box>
+          </geometry>
+        </collision>
+        <visual name="nx_vis">
+          <geometry>
+            <box><size>0.02 1.04 0.84</size></box>
+          </geometry>
+          <material>
+            <ambient>1 1 1 1</ambient>
+            <diffuse>1 1 1 0.10</diffuse>
+            <specular>0.8 0.8 0.8 1</specular>
+          </material>
+          <transparency>0.90</transparency>
+        </visual>
+      </link>
+
+      <!-- +Y wall -->
+      <link name="wall_py">
+        <pose>0 0.51 0.42 0 0 0</pose>
+        <collision name="py_col">
+          <geometry>
+            <box><size>1.04 0.02 0.84</size></box>
+          </geometry>
+        </collision>
+        <visual name="py_vis">
+          <geometry>
+            <box><size>1.04 0.02 0.84</size></box>
+          </geometry>
+          <material>
+            <ambient>1 1 1 1</ambient>
+            <diffuse>1 1 1 0.10</diffuse>
+            <specular>0.8 0.8 0.8 1</specular>
+          </material>
+          <transparency>0.90</transparency>
+        </visual>
+      </link>
+
+      <!-- -Y wall -->
+      <link name="wall_ny">
+        <pose>0 -0.51 0.42 0 0 0</pose>
+        <collision name="ny_col">
+          <geometry>
+            <box><size>1.04 0.02 0.84</size></box>
+          </geometry>
+        </collision>
+        <visual name="ny_vis">
+          <geometry>
+            <box><size>1.04 0.02 0.84</size></box>
+          </geometry>
+          <material>
+            <ambient>1 1 1 1</ambient>
+            <diffuse>1 1 1 0.10</diffuse>
+            <specular>0.8 0.8 0.8 1</specular>
+          </material>
+          <transparency>0.90</transparency>
+        </visual>
+      </link>
+    </model>
+
+    <!-- =======================
+         Water Volume (visual)
+         ======================= -->
+    <!-- A non-colliding blue box that looks like water and matches the inner tank cavity. -->
+    <model name="water_visual">
+      <static>true</static>
+      <link name="water_link">
+        <!-- Centered so its top is flush with tank rim (0.82 m top, bottom at 0.02 m) -->
+        <pose>0 0 0.42 0 0 0</pose>
+        <visual name="water_vis">
+          <geometry>
+            <box><size>1.00 1.00 0.80</size></box>
+          </geometry>
+          <material>
+            <ambient>0.2 0.4 0.8 1</ambient>
+            <diffuse>0.2 0.4 0.8 0.5</diffuse> <!-- semi-transparent blue -->
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+          <transparency>0.50</transparency>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ======================================
+         Buoyancy System: defines "real water"
+         ====================================== -->
+    <!-- Any object whose volume intersects this region will feel buoyancy. -->
+    <plugin
+        name="ignition::gazebo::systems::Buoyancy"
+        filename="ignition-gazebo-buoyancy-system">
+      <region name="tank_water">
+        <!-- Same volume as water_visual -->
+        <pose>0 0 0.42 0 0 0</pose>
+        <box>
+          <size>1.00 1.00 0.80</size>
+        </box>
+        <fluid_density>1000</fluid_density>         <!-- kg/m^3 -->
+        <linear_damping>0.2</linear_damping>
+        <angular_damping>0.2</angular_damping>
+      </region>
+    </plugin>
+
+    <!-- Helpful: spawn a test sphere you can drop into the water -->
+    <model name="float_test_sphere">
+      <pose>0 0 1.2 0 0 0</pose>
+      <link name="ball">
+        <inertial>
+          <mass>0.5</mass>
+          <inertia>
+            <ixx>0.001</ixx><iyy>0.001</iyy><izz>0.001</izz>
+            <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
+          </inertia>
+        </inertial>
+        <collision name="col">
+          <geometry><sphere><radius>0.08</radius></sphere></geometry>
+        </collision>
+        <visual name="vis">
+          <geometry><sphere><radius>0.08</radius></sphere></geometry>
+          <material>
+            <ambient>0.7 0.1 0.1 1</ambient>
+            <diffuse>0.7 0.1 0.1 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+  </world>
+</sdf>

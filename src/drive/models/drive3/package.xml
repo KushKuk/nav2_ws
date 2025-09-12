@@ -1,10 +1,10 @@
 <package format="2">
-  <name>drive</name>
+  <name>drive3</name>
   <version>1.0.0</version>
   <description>
-    <p>URDF Description package for drive</p>
+    <p>URDF Description package for drive3</p>
     <p>This package contains configuration data, 3D models and launch files
-for drive robot</p>
+for drive3 robot</p>
   </description>
   <author>TODO</author>
   <maintainer email="TODO@email.com" />
