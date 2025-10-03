@@ -10,7 +10,7 @@ AckermannCmdVelConverter::AckermannCmdVelConverter()
 {
     // Declare parameters
     this->declare_parameter<double>("wheel_radius", 0.1125);  // From URDF wheel size
-    this->declare_parameter<double>("max_steering_angle", M_PI/3);  // 60 degrees max
+    this->declare_parameter<double>("max_steering_angle", 2*M_PI);  // 60 degrees max
     this->declare_parameter<double>("robot_length", 1.0);  // Distance from front to rear axle
     this->declare_parameter<double>("robot_width", 0.54);   // Distance between left/right wheels
 

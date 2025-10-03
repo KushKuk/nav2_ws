@@ -93,7 +93,10 @@ def generate_launch_description():
             '-name', 'drive_rover',
             '-x', '0.0',
             '-y', '0.0',
-            '-z', '0.5'
+            '-z', '1.0',      # Much higher spawn height to clear wheels from ground
+            '-R', '0',  # Roll rotation to fix orientation
+            '-P', '0.0',      # Pitch
+            '-Y', '0.0'       # Yaw
         ],
         output='screen'
     )
