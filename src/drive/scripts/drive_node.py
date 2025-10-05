@@ -8,25 +8,24 @@ import termios
 import tty
 import threading
 from select import select
+import sys
 
 speed = 1.0
 
-class CrabSteeringTeleop(Node):
+class SkidSteeringTeleop(Node):
     def __init__(self):
-        super().__init__('crab_steering_teleop')
+        super().__init__('skid_steering_teleop')
         self.pub = self.create_publisher(Twist, 'cmd_vel', 10)
         self.linear_x = 0.0
         self.angular_z = 0.0
 
-        self.get_logger().info("Crab Steering Teleop started. Use WASD to move, Space to stop.")
+        print("\n[INFO] Skid Steering Teleop started. Use WASD to move, Space to stop.\n")
 
-        # Start key listener thread
         self.running = True
         self.key_thread = threading.Thread(target=self.key_listener)
         self.key_thread.daemon = True
         self.key_thread.start()
 
-        # Send Twist periodically
         self.timer = self.create_timer(0.1, self.publish_twist)
 
     def publish_twist(self):
@@ -47,35 +46,41 @@ class CrabSteeringTeleop(Node):
         finally:
             termios.tcsetattr(sys.stdin, termios.TCSADRAIN, settings)
 
+    def print_line(self, text):
+        # Move cursor to start of line, clear line, then print
+        sys.stdout.write('\r\033[K' + text + '\n')
+        sys.stdout.flush()
+
     def process_key(self, key):
         if key == 'w':
             self.linear_x = speed
             self.angular_z = 0.0
-            self.get_logger().info("Forward")
+            self.print_line("Forward")
         elif key == 's':
             self.linear_x = -speed
             self.angular_z = 0.0
-            self.get_logger().info("Backward")
+            self.print_line("Backward")
         elif key == 'a':
             self.angular_z = -speed
             self.linear_x = 0.0
-            self.get_logger().info("Left (Crab)")
+            self.print_line("Left")
         elif key == 'd':
             self.angular_z = speed
             self.linear_x = 0.0
-            self.get_logger().info("Right (Crab)")
+            self.print_line("Right")
         elif key == ' ':
             self.linear_x = 0.0
             self.angular_z = 0.0
-            self.get_logger().info("Stop")
+            self.print_line("Stop")
         elif key == '\x03':  # CTRL+C
             self.running = False
+            self.print_line("Exiting teleop...")
             rclpy.shutdown()
 
 
 def main():
     rclpy.init()
-    node = CrabSteeringTeleop()
+    node = SkidSteeringTeleop()
     try:
         rclpy.spin(node)
     except KeyboardInterrupt:
