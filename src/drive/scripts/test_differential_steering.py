@@ -25,7 +25,7 @@ def test_rover_launch():
     
     # Source the workspace
     env = os.environ.copy()
-    env['BASH_ENV'] = '/home/kush/nav2_ws/install/setup.bash'
+    env['BASH_ENV'] = '/home/ujjwal/nav2_ws/install/setup.bash'
     
     print("1. Launching rover with differential steering (rover_complete.launch.py)...")
     print("   This should:")
@@ -39,7 +39,7 @@ def test_rover_launch():
         # Launch the complete rover system
         proc = subprocess.Popen([
             'bash', '-c', 
-            'source /home/kush/nav2_ws/install/setup.bash && '
+            'source /home/ujjwal/nav2_ws/install/setup.bash && '
             'ros2 launch drive rover_complete.launch.py'
         ], env=env)
         
@@ -52,7 +52,7 @@ def test_rover_launch():
         # Check if the converter is running
         result = subprocess.run([
             'bash', '-c',
-            'source /home/kush/nav2_ws/install/setup.bash && ros2 node list | grep ackermann'
+            'source /home/ujjwal/nav2_ws/install/setup.bash && ros2 node list | grep ackermann'
         ], capture_output=True, text=True, env=env)
         
         if 'ackermann_cmd_vel_converter' in result.stdout:
@@ -64,7 +64,7 @@ def test_rover_launch():
         print("\n3. Checking ROS topics...")
         topic_result = subprocess.run([
             'bash', '-c',
-            'source /home/kush/nav2_ws/install/setup.bash && ros2 topic list | grep -E "(cmd_vel|drive_controller|steer_controller)"'
+            'source /home/ujjwal/nav2_ws/install/setup.bash && ros2 topic list | grep -E "(cmd_vel|drive_controller|steer_controller)"'
         ], capture_output=True, text=True, env=env)
         
         expected_topics = ['/cmd_vel', '/drive_controller/commands', '/steer_controller/commands']
@@ -82,7 +82,7 @@ def test_rover_launch():
         
         print("\n5. Manual Testing Instructions:")
         print("   To test teleop control, open a new terminal and run:")
-        print("   $ source /home/kush/nav2_ws/install/setup.bash")
+        print("   $ source /home/ujjwal/nav2_ws/install/setup.bash")
         print("   $ ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args --remap cmd_vel:=/cmd_vel")
         print("   ")
         print("   Or use the automatic teleop launch:")

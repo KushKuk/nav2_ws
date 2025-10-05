@@ -11,14 +11,14 @@ from select import select
 
 speed = 1.0
 
-class skidSteeringTeleop(Node):
+class CrabSteeringTeleop(Node):
     def __init__(self):
-        super().__init__('skid_steering_teleop')
+        super().__init__('crab_steering_teleop')
         self.pub = self.create_publisher(Twist, 'cmd_vel', 10)
         self.linear_x = 0.0
         self.angular_z = 0.0
 
-        self.get_logger().info("skid Steering Teleop started. Use WASD to move, Space to stop.")
+        self.get_logger().info("Crab Steering Teleop started. Use WASD to move, Space to stop.")
 
         # Start key listener thread
         self.running = True
@@ -49,21 +49,21 @@ class skidSteeringTeleop(Node):
 
     def process_key(self, key):
         if key == 'w':
-            self.linear_x += speed
+            self.linear_x = speed
             self.angular_z = 0.0
             self.get_logger().info("Forward")
         elif key == 's':
-            self.linear_x += -speed
+            self.linear_x = -speed
             self.angular_z = 0.0
             self.get_logger().info("Backward")
         elif key == 'a':
-            self.angular_z += -speed
+            self.angular_z = -speed
             self.linear_x = 0.0
-            self.get_logger().info("Left (skid)")
+            self.get_logger().info("Left (Crab)")
         elif key == 'd':
-            self.angular_z += speed
+            self.angular_z = speed
             self.linear_x = 0.0
-            self.get_logger().info("Right (skid)")
+            self.get_logger().info("Right (Crab)")
         elif key == ' ':
             self.linear_x = 0.0
             self.angular_z = 0.0
@@ -75,7 +75,7 @@ class skidSteeringTeleop(Node):
 
 def main():
     rclpy.init()
-    node = skidSteeringTeleop()
+    node = CrabSteeringTeleop()
     try:
         rclpy.spin(node)
     except KeyboardInterrupt:

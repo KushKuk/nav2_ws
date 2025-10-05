@@ -44,6 +44,93 @@
       </geometry>
     </collision>
   </link>
+  <!--IMU-->
+  <link name="imu_link">
+
+    <inertial>
+
+      <mass value="0.01"/>
+
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+
+      <inertia ixx="1e-5" ixy="0.0" ixz="0.0" iyy="1e-5" iyz="0.0" izz="1e-5"/>
+
+    </inertial>
+
+    <visual>
+
+      <geometry>
+
+        <box size="0.01 0.01 0.01"/>
+
+      </geometry>
+
+    </visual>
+
+    <collision>
+
+      <geometry>
+
+        <box size=" 1 1 1 "/>
+
+      </geometry>
+
+    </collision>
+
+  </link>
+
+  <joint name="imu_joint" type="fixed">
+
+    <parent link="base"/>
+
+    <child link="imu_link"/>
+
+    <origin xyz="0.5 -0.2 .5" rpy="0 0 0"/>
+
+  </joint>
+
+  <gazebo reference="imu_link">
+
+    <sensor name="imu_sensor" type="imu">
+
+      <pose>0 0 0 0 0 0</pose>
+
+      <update_rate>50</update_rate>
+
+      <always_on>true</always_on>
+
+      <visualize>true</visualize>
+
+      <topic>/imu/data</topic>
+
+      <imu>
+
+        <noise>
+
+          <type>gaussian</type>
+
+          <mean>0.0</mean>
+
+          <stddev>0.0002</stddev>
+
+        </noise>
+
+      </imu>
+
+      <plugin filename="libignition-gazebo-imu-system.so"
+
+        name="ignition::gazebo::systems::Imu">
+
+        <topic>/imu</topic>
+
+      </plugin>
+
+    </sensor>
+
+  </gazebo>
+  
+
+
   <link
     name="right_front">
     <inertial>
@@ -86,7 +173,7 @@
   </link>
   <joint
     name="joint_right_front"
-    type="revolute">
+    type="fixed">
     <origin
       xyz="-0.070337 -0.15542 -0.062427"
       rpy="-1.5708 0.12123 1.5708" />
@@ -144,7 +231,7 @@
   </link>
   <joint
     name="joint_right_bogie"
-    type="revolute">
+    type="fixed">
     <origin
       xyz="-0.31109 -0.16078 0"
       rpy="-3.1416 0 3.0204" />
@@ -308,7 +395,7 @@
   </link>
   <joint
     name="joint_right_back"
-    type="revolute">
+    type="fixed">
     <origin
       xyz="0 -0.10542 -0.012427"
       rpy="-1.5708 0.12123 1.5708" />
@@ -641,7 +728,7 @@
   </link>
   <joint
     name="joint_left_back"
-    type="revolute">
+    type="fixed">
     <origin
       xyz="-0.54534 -0.10578 -0.012427"
       rpy="-1.5708 0.12123 1.5708" />
@@ -834,109 +921,11 @@
   <!-- Gazebo plugin for ros2_control -->
   <gazebo>
     <plugin filename="ign_ros2_control-system" name="ign_ros2_control::IgnitionROS2ControlPlugin">
-      <parameters>/home/kush/nav2_ws/src/drive/models/drive/config/rover_controllers.yaml</parameters>
+      <parameters>/home/ujjwal/nav2_ws/src/drive/models/drive/config/rover_controllers.yaml</parameters>
       <ros>
         <remapping>/clock:=/clock</remapping>
       </ros>
     </plugin>
-  </gazebo>
-
-  <!-- IMU Sensor -->
-  <link name="imu_link">
-    <inertial>
-      <mass value="0.01"/>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
-      <inertia ixx="1e-5" ixy="0.0" ixz="0.0" iyy="1e-5" iyz="0.0" izz="1e-5"/>
-    </inertial>
-    <visual>
-      <geometry>
-        <box size="0.01 0.01 0.01"/>
-      </geometry>
-    </visual>
-    <collision>
-      <geometry>
-        <box size="0.01 0.01 0.01"/>
-      </geometry>
-    </collision>
-  </link>
-  <joint name="imu_joint" type="fixed">
-    <parent link="base"/>
-    <child link="imu_link"/>
-    <origin xyz="-0.345788930637997 -0.153460943930369 0.05" rpy="0 0 0"/>
-  </joint>
-  <gazebo reference="imu_link">
-    <sensor name="imu_sensor" type="imu">
-      <pose>0 0 0 0 0 0</pose>
-      <update_rate>50</update_rate>
-      <always_on>true</always_on>
-      <visualize>true</visualize>
-      <topic>/imu/data</topic>
-      <imu>
-        <noise>
-          <type>gaussian</type>
-          <mean>0.0</mean>
-          <stddev>0.0002</stddev>
-        </noise>
-      </imu>
-      <plugin filename="libignition-gazebo-imu-system.so"
-        name="ignition::gazebo::systems::Imu">
-        <topic>/imu</topic>
-      </plugin>
-    </sensor>
-  </gazebo>
-
-<!-- LiDAR Sensor -->
-<link name="lidar_link">
-    <inertial>
-      <mass value="0.01"/>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
-      <inertia ixx="1e-5" ixy="0.0" ixz="0.0" iyy="1e-5" iyz="0.0" izz="1e-5"/>
-    </inertial>
-    <visual>
-      <geometry>
-        <cylinder radius="0.03" length="0.02"/>
-      </geometry>
-    </visual>
-    <collision>
-      <geometry>
-        <cylinder radius="0.03" length="0.02"/>
-      </geometry>
-    </collision>
-  </link>
-  <joint name="lidar_joint" type="fixed">
-    <parent link="base"/>
-    <child link="lidar_link"/>
-    <origin xyz="-0.345788930637997 -0.153460943930369 -0.12" rpy="0 0 0"/>
-  </joint>
-  <gazebo reference="lidar_link">
-    <sensor name='lidar' type='gpu_lidar'>
-      <pose>0 0 0 0 0 0</pose>
-      <topic>/scan</topic>
-      <update_rate>10</update_rate>
-      <ray>
-        <scan>
-          <horizontal>
-            <samples>640</samples>
-            <resolution>1</resolution>
-            <min_angle>-1.396263</min_angle>
-            <max_angle>1.396263</max_angle>
-          </horizontal>
-          <vertical>
-            <samples>1</samples>
-            <resolution>0.01</resolution>
-            <min_angle>0</min_angle>
-            <max_angle>0</max_angle>
-          </vertical>
-        </scan>
-        <range>
-          <min>0.08</min>
-          <max>10.0</max>
-          <resolution>0.01</resolution>
-        </range>
-      </ray>
-      <always_on>1</always_on>
-      <visualize>true</visualize>
-    </sensor>
   </gazebo>
 
 </robot>
