@@ -103,23 +103,8 @@ def generate_launch_description():
             ]
         ),
 
-        # Keyboard Teleop - opens in new terminal
-        TimerAction(
-            period=12.0,
-            actions=[
-                ExecuteProcess(
-                    cmd=[
-                        'gnome-terminal', '--', 'bash', '-c', 
-                        'source /home/ujjwal/nav2_ws/install/setup.bash && '
-                        'echo "=== ROVER TELEOP CONTROL ===" && '
-                        'echo "Differential steering is ACTIVE" && '
-                        'echo "Press any key to start..." && read && '
-                        'ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args --remap cmd_vel:=/cmd_vel'
-                    ],
-                    output='screen'
-                )
-            ]
-        ),
+
+        
 
         # Status Monitor - provides feedback WITHOUT sending commands
         TimerAction(
