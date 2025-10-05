@@ -1,0 +1,265 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="drive">
+
+  <xacro:property name="PI" value="3.14159265359"/>
+  
+  <xacro:property name="base_color" value="0.753 0.753 0.753 1"/>
+  <xacro:property name="wheel_color" value="0.792 0.820 0.933 1"/>
+  
+  <xacro:property name="wheel_mu1" value="0.8"/>
+  <xacro:property name="wheel_mu2" value="0.8"/>
+
+  <xacro:macro name="wheel_assembly" params="name parent *origin">
+    <link name="wheel_${name}">
+      <inertial>
+        <origin xyz="-0.09819 0.00135 0.00831" rpy="0 0 0" />
+        <mass value="32.802" />
+        <inertia ixx="0.60349" ixy="-0.00341" ixz="-0.02092" iyy="0.36113" iyz="0.00029" izz="0.3629" />
+      </inertial>
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="package://drive/meshes/wheel_${name}.STL" />
+        </geometry>
+        <material name="">
+          <color rgba="${wheel_color}" />
+        </material>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="package://drive/meshes/wheel_${name}.STL" />
+        </geometry>
+      </collision>
+    </link>
+
+    <joint name="joint_wheel_${name}" type="continuous">
+      <parent link="${parent}" />
+      <child link="wheel_${name}" />
+      <xacro:insert_block name="origin" />
+      <axis xyz="1 0 0" />
+    </joint>
+
+    <gazebo reference="wheel_${name}">
+      <mu1>${wheel_mu1}</mu1>
+      <mu2>${wheel_mu2}</mu2>
+      <material>Gazebo/Black</material>
+    </gazebo>
+    <gazebo reference="joint_wheel_${name}">
+      <implicitSpringDamper>true</implicitSpringDamper>
+    </gazebo>
+  </xacro:macro>
+
+  <xacro:macro name="ros2_control_steering_joint" params="name">
+    <joint name="${name}">
+      <command_interface name="position">
+        <param name="min">-1.0</param>
+        <param name="max">1.0</param>
+      </command_interface>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+  </xacro:macro>
+
+  <xacro:macro name="ros2_control_wheel_joint" params="name">
+    <joint name="${name}">
+      <command_interface name="velocity"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+  </xacro:macro>
+
+  <link name="base">
+    <inertial>
+      <origin xyz="-0.34579 -0.15346 -0.01486" rpy="0 0 0" />
+      <mass value="34.106" />
+      <inertia ixx="2.15747" ixy="0.00471" ixz="-1.715E-06" iyy="0.75938" iyz="0.00266" izz="2.53265" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://drive/meshes/base.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="${base_color}" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://drive/meshes/base.STL" />
+      </geometry>
+    </collision>
+  </link>
+  
+  <link name="right_front">
+    <inertial>
+      <origin xyz="-0.12375 -0.05313 0.0225" rpy="0 0 0" />
+      <mass value="0.26897" />
+      <inertia ixx="0.00101" ixy="-0.00177" ixz="2.17E-09" iyy="0.00424" iyz="1.08E-09" izz="0.00516" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" /><geometry><mesh filename="package://drive/meshes/right_front.STL" /></geometry>
+      <material name=""><color rgba="${wheel_color}" /></material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" /><geometry><mesh filename="package://drive/meshes/right_front.STL" /></geometry>
+    </collision>
+  </link>
+  <joint name="joint_right_front" type="fixed">
+    <origin xyz="-0.07034 -0.15542 -0.06243" rpy="-${PI/2} 0.12123 ${PI/2}" />
+    <parent link="base" />
+    <child link="right_front" />
+  </joint>
+
+  <link name="right_bogie">
+    <inertial>
+      <origin xyz="-4.0E-06 -0.13053 0.01633" rpy="0 0 0" />
+      <mass value="0.59393" />
+      <inertia ixx="0.00201" ixy="3.0E-07" ixz="-1.3E-08" iyy="0.00531" iyz="3.4E-09" izz="0.00452" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" /><geometry><mesh filename="package://drive/meshes/right_bogie.STL" /></geometry>
+      <material name=""><color rgba="${wheel_color}" /></material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" /><geometry><mesh filename="package://drive/meshes/right_bogie.STL" /></geometry>
+    </collision>
+  </link>
+  <joint name="joint_right_bogie" type="fixed">
+    <origin xyz="-0.31109 -0.16078 0" rpy="-${PI} 0 3.0204" />
+    <parent link="right_front" />
+    <child link="right_bogie" />
+  </joint>
+
+  <link name="right_back">
+    <inertial>
+      <origin xyz="0.30742 -0.20016 0.07043" rpy="0 0 0" />
+      <mass value="0.46295" />
+      <inertia ixx="0.00374" ixy="0.00283" ixz="2.84E-09" iyy="0.00401" iyz="-4.73E-09" izz="0.00632" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" /><geometry><mesh filename="package://drive/meshes/right_back.STL" /></geometry>
+      <material name=""><color rgba="${wheel_color}" /></material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" /><geometry><mesh filename="package://drive/meshes/right_back.STL" /></geometry>
+    </collision>
+  </link>
+  <joint name="joint_right_back" type="fixed">
+    <origin xyz="0 -0.10542 -0.01243" rpy="-${PI/2} 0.12123 ${PI/2}" />
+    <parent link="base" />
+    <child link="right_back" />
+  </joint>
+
+  <link name="left_front">
+    <inertial>
+      <origin xyz="-0.12375 -0.05313 0.0225" rpy="0 0 0" />
+      <mass value="0.26897" />
+      <inertia ixx="0.00101" ixy="-0.00177" ixz="2.17E-09" iyy="0.00424" iyz="1.08E-09" izz="0.00516" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" /><geometry><mesh filename="package://drive/meshes/left_front.STL" /></geometry>
+      <material name=""><color rgba="${wheel_color}" /></material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" /><geometry><mesh filename="package://drive/meshes/left_front.STL" /></geometry>
+    </collision>
+  </link>
+  <joint name="joint_left_front" type="revolute">
+    <origin xyz="-0.56534 -0.15578 -0.06243" rpy="-${PI/2} 0.12123 ${PI/2}" />
+    <parent link="base" />
+    <child link="left_front" />
+    <axis xyz="0 0 1" />
+    <limit effort="10" velocity="0" lower="-1.0" upper="1.0" />
+  </joint>
+
+  <link name="left_bogie">
+    <inertial>
+      <origin xyz="-4.0E-06 -0.13053 0.06133" rpy="0 0 0" />
+      <mass value="0.59393" />
+      <inertia ixx="0.00201" ixy="3.0E-07" ixz="-1.3E-08" iyy="0.00531" iyz="3.4E-09" izz="0.00452" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" /><geometry><mesh filename="package://drive/meshes/left_bogie.STL" /></geometry>
+      <material name=""><color rgba="${wheel_color}" /></material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" /><geometry><mesh filename="package://drive/meshes/left_bogie.STL" /></geometry>
+    </collision>
+  </link>
+  <joint name="joint_left_bogie" type="revolute">
+    <origin xyz="-0.31109 -0.16078 0" rpy="0 0 -0.12123" />
+    <parent link="left_front" />
+    <child link="left_bogie" />
+    <axis xyz="0 0 1" />
+    <limit effort="10" velocity="0" lower="-${PI}" upper="${PI}" />
+  </joint>
+
+  <link name="left_back">
+    <inertial>
+      <origin xyz="0.30742 -0.20016 0.06491" rpy="0 0 0" />
+      <mass value="0.46295" />
+      <inertia ixx="0.00374" ixy="0.00283" ixz="2.84E-09" iyy="0.00401" iyz="-4.73E-09" izz="0.00632" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" /><geometry><mesh filename="package://drive/meshes/left_back.STL" /></geometry>
+      <material name=""><color rgba="${wheel_color}" /></material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" /><geometry><mesh filename="package://drive/meshes/left_back.STL" /></geometry>
+    </collision>
+  </link>
+  <joint name="joint_left_back" type="fixed">
+    <origin xyz="-0.54534 -0.10578 -0.01243" rpy="-${PI/2} 0.12123 ${PI/2}" />
+    <parent link="base" />
+    <child link="left_back" />
+  </joint>
+  
+  <xacro:wheel_assembly name="1" parent="right_bogie">
+    <origin xyz="0.225 -0.18509 0" rpy="-${PI/2} ${PI/2} 0" />
+  </xacro:wheel_assembly>
+  <xacro:wheel_assembly name="2" parent="right_bogie">
+    <origin xyz="-0.225 -0.18509 0" rpy="-${PI/2} ${PI/2} 0" />
+  </xacro:wheel_assembly>
+  <xacro:wheel_assembly name="3" parent="right_back">
+    <origin xyz="0.45337 -0.39 0" rpy="-${PI/2} ${PI/2} 0" />
+  </xacro:wheel_assembly>
+  
+  <xacro:wheel_assembly name="4" parent="left_bogie">
+    <origin xyz="-0.225 -0.18509 0.01688" rpy="-${PI/2} ${PI/2} 0" />
+  </xacro:wheel_assembly>
+  <xacro:wheel_assembly name="5" parent="left_bogie">
+    <origin xyz="0.225 -0.18509 0.01688" rpy="-${PI/2} ${PI/2} 0" />
+  </xacro:wheel_assembly>
+  <xacro:wheel_assembly name="6" parent="left_back">
+    <origin xyz="0.45337 -0.39 0.03438" rpy="-${PI/2} ${PI/2} 0" />
+  </xacro:wheel_assembly>
+
+  <ros2_control name="RoverHardware" type="system">
+    <hardware>
+      <plugin>ign_ros2_control/IgnitionSystem</plugin>
+    </hardware>
+    <xacro:ros2_control_steering_joint name="joint_right_front"/>
+    <xacro:ros2_control_steering_joint name="joint_right_back"/>
+    <xacro:ros2_control_steering_joint name="joint_left_front"/>
+    <xacro:ros2_control_steering_joint name="joint_left_back"/>
+    
+    <xacro:ros2_control_wheel_joint name="joint_wheel_1"/>
+    <xacro:ros2_control_wheel_joint name="joint_wheel_2"/>
+    <xacro:ros2_control_wheel_joint name="joint_wheel_3"/>
+    <xacro:ros2_control_wheel_joint name="joint_wheel_4"/>
+    <xacro:ros2_control_wheel_joint name="joint_wheel_5"/>
+    <xacro:ros2_control_wheel_joint name="joint_wheel_6"/>
+  </ros2_control>
+
+  <gazebo>
+    <plugin filename="ign_ros2_control-system" name="ign_ros2_control::IgnitionROS2ControlPlugin">
+      <parameters>/home/ujjwal/nav2_ws/src/drive/models/drive/config/rover_controllers.yaml</parameters>
+      <ros>
+        <remapping>/clock:=/clock</remapping>
+      </ros>
+    </plugin>
+  </gazebo>
+
+</robot>
