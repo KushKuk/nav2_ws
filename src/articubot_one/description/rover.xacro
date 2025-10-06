@@ -255,7 +255,7 @@
 
   <gazebo>
     <plugin filename="ign_ros2_control-system" name="ign_ros2_control::IgnitionROS2ControlPlugin">
-      <parameters>/home/ujjwal/nav2_ws/src/drive/models/drive/config/rover_controllers.yaml</parameters>
+      <parameters>/home/kush/nav2_ws/src/drive/models/drive/config/rover_controllers.yaml</parameters>
       <ros>
         <remapping>/clock:=/clock</remapping>
       </ros>

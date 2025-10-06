@@ -53,19 +53,19 @@ class SkidSteeringTeleop(Node):
 
     def process_key(self, key):
         if key == 'w':
-            self.linear_x = speed
+            self.linear_x += speed
             self.angular_z = 0.0
             self.print_line("Forward")
         elif key == 's':
-            self.linear_x = -speed
+            self.linear_x += -speed
             self.angular_z = 0.0
             self.print_line("Backward")
         elif key == 'a':
-            self.angular_z = -speed
+            self.angular_z += -speed
             self.linear_x = 0.0
             self.print_line("Left")
         elif key == 'd':
-            self.angular_z = speed
+            self.angular_z += speed
             self.linear_x = 0.0
             self.print_line("Right")
         elif key == ' ':
