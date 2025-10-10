@@ -52,6 +52,22 @@ def generate_launch_description():
             output='screen'
         ),
 
+        # Image bridge
+        Node(
+            package='ros_gz_bridge',
+            executable='parameter_bridge',
+            name='image_bridge',
+            arguments=[
+                '/depth_camera/image@sensor_msgs/msg/Image@ignition.msgs.Image',
+                '/depth_camera/camera_info@sensor_msgs/msg/CameraInfo@ignition.msgs.CameraInfo'
+            ],
+            remappings=[
+                ('/depth_camera/image', '/depth_camera/image'),
+                ('/depth_camera/camera_info', '/depth_camera/camera_info')
+            ],
+            output='screen'
+        ),
+
         # Delay the spawn to ensure Gazebo is ready
         TimerAction(
     period=3.0,
