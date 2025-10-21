@@ -27,10 +27,21 @@ def generate_launch_description():
         Node(
             package='robot_state_publisher',
             executable='robot_state_publisher',
-            name='robot_state_publisher',
-            parameters=[{'robot_description': open(urdf_path).read()}],
+            parameters=[{
+                'use_sim_time': True,
+                'robot_description': open(urdf_path).read()
+            }],
             output='screen'
         ),
+
+        #joint state publisher
+        Node(
+            package='joint_state_publisher',
+            executable='joint_state_publisher',
+            name='joint_state_publisher',
+            output='screen'
+        ),
+
 
         # IMU Bridge
         Node(
@@ -48,9 +59,20 @@ def generate_launch_description():
             executable='parameter_bridge',
             name='lidar_bridge',
             arguments=['/scan@sensor_msgs/msg/LaserScan@ignition.msgs.LaserScan'],
+            parameters=[{'use_sim_time': True}],
             remappings=[('/scan', '/scan')],
             output='screen'
         ),
+
+        #clock 
+        Node(
+            package='ros_gz_bridge',
+            executable='parameter_bridge',
+            name='clock_bridge',
+            arguments=['/clock@rosgraph_msgs/msg/Clock@gz.msgs.Clock'],
+            output='screen'
+        ),
+
 
         # Delay the spawn to ensure Gazebo is ready
         TimerAction(
@@ -63,7 +85,7 @@ def generate_launch_description():
                 '-name', 'drive',
                 '-topic', 'robot_description',
                 '-x', '0', '-y', '0', '-z', '1',
-                '-R', '0', '-P', '3.14', '-Y', '0'
+                '-R', '0', '-P', '', '-Y', '0'
             ],
             output='screen'
         )
@@ -78,6 +100,7 @@ def generate_launch_description():
                 os.path.join(drive_share_dir, 'launch', 'ros2_control.launch.py')
             )
         ),
+
         
         # Differential Steering Converter - CORE FUNCTIONALITY
         TimerAction(
