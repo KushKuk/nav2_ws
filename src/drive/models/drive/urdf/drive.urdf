@@ -848,101 +848,105 @@
     </plugin>
   </gazebo>
 
-  <!-- IMU Sensor -->
-  <link name="imu_link">
-    <inertial>
-      <mass value="0.01"/>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
-      <inertia ixx="1e-5" ixy="0.0" ixz="0.0" iyy="1e-5" iyz="0.0" izz="1e-5"/>
-    </inertial>
-    <visual>
-      <geometry>
-        <box size="0.01 0.01 0.01"/>
-      </geometry>
-    </visual>
-    <collision>
-      <geometry>
-        <box size="0.01 0.01 0.01"/>
-      </geometry>
-    </collision>
-  </link>
-  <joint name="imu_joint" type="fixed">
-    <parent link="base_link"/>
-    <child link="imu_link"/>
-    <origin xyz="-0.345788930637997 -0.153460943930369 0.05" rpy="0 0 0"/>
-  </joint>
-  <gazebo reference="imu_link">
-    <sensor name="imu_sensor" type="imu">
-      <pose>0 0 0 0 0 0</pose>
-      <update_rate>50</update_rate>
-      <always_on>true</always_on>
-      <visualize>true</visualize>
-      <topic>/imu/data</topic>
-      <imu>
-        <noise>
-          <type>gaussian</type>
-          <mean>0.0</mean>
-          <stddev>0.0002</stddev>
-        </noise>
-      </imu>
-      <plugin filename="libignition-gazebo-imu-system.so"
-        name="ignition::gazebo::systems::Imu">
-        <topic>/imu</topic>
-      </plugin>
-    </sensor>
-  </gazebo>
+<!-- IMU Sensor -->
+<link name="imu_link">
+  <inertial>
+    <mass value="0.01"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <inertia ixx="1e-5" ixy="0.0" ixz="0.0" iyy="1e-5" iyz="0.0" izz="1e-5"/>
+  </inertial>
+  <visual>
+    <geometry>
+      <box size="0.01 0.01 0.01"/>
+    </geometry>
+  </visual>
+  <collision>
+    <geometry>
+      <box size="0.01 0.01 0.01"/>
+    </geometry>
+  </collision>
+</link>
+
+<joint name="imu_joint" type="fixed">
+  <parent link="base_link"/>
+  <child link="imu_link"/>
+  <origin xyz="0.45 -0.3 0.05" rpy="0 0 0"/>
+</joint>
+
+<gazebo reference="imu_link">
+  <sensor name="imu_sensor" type="imu">
+    <pose>0 0 0 0 0 0</pose>
+    <update_rate>50</update_rate>
+    <always_on>true</always_on>
+    <visualize>true</visualize>
+    <topic>/imu/data</topic>
+    <imu>
+      <noise>
+        <type>gaussian</type>
+        <mean>0.0</mean>
+        <stddev>0.0002</stddev>
+      </noise>
+    </imu>
+    <plugin filename="libignition-gazebo-imu-system.so"
+            name="ignition::gazebo::systems::Imu">
+      <topic>/imu</topic>
+    </plugin>
+  </sensor>
+</gazebo>
 
 <!-- LiDAR Sensor -->
 <link name="lidar_link">
-    <inertial>
-      <mass value="0.01"/>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
-      <inertia ixx="1e-5" ixy="0.0" ixz="0.0" iyy="1e-5" iyz="0.0" izz="1e-5"/>
-    </inertial>
-    <visual>
-      <geometry>
-        <cylinder radius="0.03" length="0.02"/>
-      </geometry>
-    </visual>
-    <collision>
-      <geometry>
-        <cylinder radius="0.03" length="0.02"/>
-      </geometry>
-    </collision>
-  </link>
-  <joint name="lidar_joint" type="fixed">
-    <parent link="base_link"/>
-    <child link="lidar_link"/>
-    <origin xyz="-0.345788930637997 -0.153460943930369 -0.12" rpy="0 0 0"/>
-  </joint>
-  <gazebo reference="lidar_link">
-    <sensor name='lidar' type='gpu_lidar'>
+  <inertial>
+    <mass value="0.01"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <inertia ixx="1e-5" ixy="0.0" ixz="0.0" iyy="1e-5" iyz="0.0" izz="1e-5"/>
+  </inertial>
+  <visual>
+    <geometry>
+      <cylinder radius="0.03" length="0.02"/>
+    </geometry>
+  </visual>
+  <collision>
+    <geometry>
+      <cylinder radius="0.03" length="0.02"/>
+    </geometry>
+  </collision>
+</link>
+
+<joint name="lidar_joint" type="fixed">
+  <parent link="base_link"/>
+  <child link="lidar_link"/>
+  <origin xyz="0.45 -0.3 0.12" rpy="0 0 0"/>
+</joint>
+
+<gazebo reference="lidar_link">
+  <sensor name='lidar' type='gpu_lidar'>
     <ignition_frame_id>lidar_link</ignition_frame_id>
-      <topic>scan</topic>
-      <always_on>true</always_on>
-      <visualize>true</visualize>
-      <update_rate>5</update_rate>
-      <ray>
-        <scan>
-          <horizontal>
-            <samples>360</samples>
-            <resolution>1.000</resolution>
-            <min_angle>0.000</min_angle>
-            <max_angle>6.28000</max_angle>
-          </horizontal>
-        </scan>
-        <range>
-          <min>0.120000</min>
-          <max>3.5</max>
-          <resolution>0.015000</resolution>
-        </range>
-        <noise>
-          <type>gaussian</type>
-          <mean>0.0</mean>
-          <stddev>0.01</stddev>
-        </noise>
-      </ray>
-    </sensor>
-  </gazebo>
+    <topic>scan</topic>
+    <always_on>true</always_on>
+    <visualize>true</visualize>
+    <update_rate>5</update_rate>
+    <ray>
+      <scan>
+        <horizontal>
+          <samples>360</samples>
+          <resolution>1.0</resolution>
+          <min_angle>0.0</min_angle>
+          <max_angle>6.28319</max_angle>
+        </horizontal>
+      </scan>
+      <range>
+        <min>0.12</min>
+        <max>3.5</max>
+        <resolution>0.015</resolution>
+      </range>
+      <noise>
+        <type>gaussian</type>
+        <mean>0.0</mean>
+        <stddev>0.01</stddev>
+      </noise>
+    </ray>
+  </sensor>
+</gazebo>
 
 </robot>
