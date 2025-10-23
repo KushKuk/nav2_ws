@@ -126,6 +126,17 @@ def generate_launch_description():
             ]
         ),
 
+        # odom
+            Node(
+            package='robot_localization',
+            executable='ekf_node',
+            name='ekf_filter_node',
+            output='screen',
+            parameters=['/src/drive/config/ekf.yaml'],
+            remappings=[('/odometry/filtered', '/odom_filtered')]
+        ),
+
+
         # 9️⃣ Rover status monitor
         TimerAction(
             period=12.0,
