@@ -773,6 +773,12 @@
   <ros2_control name="RoverHardware" type="system">
     <hardware>
       <plugin>ign_ros2_control/IgnitionSystem</plugin>
+      <plugin>hardware_plugin/hardware_plugin</plugin>
+    <!-- hardware parameters you want accessible from info_.hardware_parameters -->
+    <param name="sim_mode">true</param>
+    <param name="wheel_radius">0.1125</param>
+    <param name="wheel_separation">0.54</param>
+    <param name="encoder_cpr">4096</param>
     </hardware>
     <joint name="joint_right_front">
       <command_interface name="position">

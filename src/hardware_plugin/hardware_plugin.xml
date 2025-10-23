@@ -1,0 +1,10 @@
+<library path="hardware_plugin">
+  <class
+    name="hardware_plugin"
+    type="hardware_plugin"
+    base_class_type="hardware_interface::SystemInterface">
+    <description>
+      Fortress Rover hardware interface plugin implementing SystemInterface.
+    </description>
+  </class>
+</library>
