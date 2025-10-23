@@ -134,19 +134,24 @@ def generate_launch_description():
             executable='ekf_node',
             name='ekf_filter_node',
             output='screen',
-            parameters=[ekf_params_path, {'use_sim_time': True}],
+            parameters=[ekf_params_path],
             remappings=[('/odometry/filtered', '/odom_filtered')]
         ),
 
         # 🔟 SLAM Toolbox
-        IncludeLaunchDescription(
-            PythonLaunchDescriptionSource(
-                os.path.join(slam_toolbox_share_dir, 'launch', 'online_async_launch.py')
-            ),
-            launch_arguments={
-                'slam_params_file': slam_params_path,
-                'use_sim_time': 'True'
-            }.items(),
+        TimerAction(
+            period=5.0,
+            actions=[
+                IncludeLaunchDescription(
+                    PythonLaunchDescriptionSource(
+                        os.path.join(slam_toolbox_share_dir, 'launch', 'online_async_launch.py')
+                    ),
+                    launch_arguments={
+                        'slam_params_file': slam_params_path,
+                        'use_sim_time': 'True'
+                    }.items(),
+                )
+            ]
         ),
 
         # 1️⃣1️⃣ Rover status monitor

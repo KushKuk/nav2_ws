@@ -1,0 +1,41 @@
+Project Memory: Key Learnings from SLAM Implementation
+
+This document summarizes the key learnings and debugging steps taken to successfully implement SLAM on the 'drive' robot.
+
+1. The Role of `robot_localization`
+
+- `slam_toolbox` is not a standalone odometry system. It is a SLAM solution that requires an existing source of odometry to function correctly.
+- `robot_localization` (`ekf_node`) is essential. It fuses data from wheel encoders (odometry) and an IMU to provide a continuous, but potentially drifty, `odom` -> `base_link` transform. `slam_toolbox` then uses this transform and the laser scan data to create a drift-free `map` -> `odom` transform.
+
+2. Publishing Wheel Odometry with `ros2_control`
+
+- The `diff_drive_controller` is necessary for wheel odometry. A generic `velocity_controllers/JointGroupVelocityController` is not sufficient, as it does not compute or publish odometry data.
+- The `diff_drive_controller/DiffDriveController` should be used for differential drive robots. It correctly calculates and publishes odometry messages on the `/drive_controller/odom` topic.
+
+3. The Importance of QoS Settings
+
+- Incompatible QoS settings can prevent communication between nodes. This was a major issue that prevented the `ekf_node` from subscribing to the wheel odometry topic.
+- For continuous sensor data, use `VOLATILE` durability. The `/drive_controller/odom` topic was initially being published with `TRANSIENT_LOCAL` durability, which is incorrect for a continuous data stream. The `robot_localization` node expects `VOLATILE` durability.
+- QoS settings for `ros2_control` controllers can be configured in the controller's YAML file using the `publisher_qos` parameter.
+
+4. Installing All Necessary Files
+
+- All configuration, launch, model, and world files must be installed in `CMakeLists.txt`. If they are not installed, the ROS 2 launch system will not be able to find them at runtime, leading to "file not found" errors.
+- This was the root cause of many of our problems, as the `ekf.yaml` and `slam_params.yaml` files were not being loaded, causing the nodes to start with default, incorrect parameters.
+
+5. ROS 2 Parameter Parsing
+
+- The ROS 2 parameter parser is very strict. Seemingly minor issues in YAML files can cause parsing errors.
+- Avoid redundant parameter declarations. We encountered an error when the `use_sim_time` parameter was set in both the `ekf.yaml` file and the launch file.
+- Be mindful of data types. We encountered an error where the `frequency` parameter in `ekf.yaml` was expected to be a `double` (e.g., `50.0`) but was provided as an `integer` (`50`).
+- Boolean representation can matter. In some versions of ROS 2 Humble, there is a known issue with parsing boolean `true`/`false` values in lists. Using `1` and `0` instead can be a valid workaround.
+
+6. A Systematic Approach to Debugging
+
+When debugging complex ROS 2 launch issues, a systematic approach is crucial:
+
+1.  Always check the launch logs for warnings and errors. This is the first and most important step.
+2.  Use `ros2 node list` to verify that all expected nodes are running.
+3.  Use `ros2 topic list` and `ros2 topic info --verbose` to check topic publication and subscription.
+4.  Use `ros2 run tf2_ros tf2_echo <source_frame> <target_frame>` to verify that TF transforms are being published correctly.
+5.  Carefully inspect all relevant configuration files for syntax errors, logical errors, and data type mismatches.
