@@ -2,7 +2,7 @@
 import os
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import IncludeLaunchDescription, TimerAction, ExecuteProcess
+from launch.actions import IncludeLaunchDescription, TimerAction
 from launch_ros.actions import Node
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 
@@ -15,7 +15,8 @@ def generate_launch_description():
     controller_config = os.path.join(drive_share_dir, 'models', 'drive', 'config', 'rover_controllers.yaml')
 
     return LaunchDescription([
-        # Launch Ignition Gazebo
+
+        # 1️⃣ Start Ignition Gazebo
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
                 os.path.join(ros_ign_share_dir, 'launch', 'gz_sim.launch.py')
@@ -23,86 +24,85 @@ def generate_launch_description():
             launch_arguments={'gz_args': f'-r {world_path}'}.items()
         ),
 
-        # Publish the robot description
+        # 2️⃣ Clock bridge (fixed syntax)
         Node(
-            package='robot_state_publisher',
-            executable='robot_state_publisher',
-            parameters=[{
-                'use_sim_time': True,
-                'robot_description': open(urdf_path).read()
-            }],
+            package='ros_gz_bridge',
+            executable='parameter_bridge',
+            name='clock_bridge',
+            arguments=['/world/maze_world/clock@rosgraph_msgs/msg/Clock@ignition.msgs.Clock'],
+            remappings=[('/world/maze_world/clock', '/clock')],
             output='screen'
         ),
 
-        #joint state publisher
-        Node(
-            package='joint_state_publisher',
-            executable='joint_state_publisher',
-            name='joint_state_publisher',
-            output='screen'
-        ),
-
-
-        # IMU Bridge
+        # 3️⃣ IMU bridge
         Node(
             package='ros_gz_bridge',
             executable='parameter_bridge',
             name='imu_bridge',
             arguments=['/imu/data@sensor_msgs/msg/Imu@ignition.msgs.IMU'],
-            remappings=[('/imu/data', '/imu/data')],
+            parameters=[{'use_sim_time': True}],
             output='screen'
         ),
 
-        # LiDAR bridge
+        # 4️⃣ LiDAR bridge
         Node(
             package='ros_gz_bridge',
             executable='parameter_bridge',
             name='lidar_bridge',
             arguments=['/scan@sensor_msgs/msg/LaserScan@ignition.msgs.LaserScan'],
             parameters=[{'use_sim_time': True}],
-            remappings=[('/scan', '/scan')],
             output='screen'
         ),
 
-        #clock 
-        Node(
-            package='ros_gz_bridge',
-            executable='parameter_bridge',
-            name='clock_bridge',
-            arguments=['/clock@rosgraph_msgs/msg/Clock@gz.msgs.Clock'],
-            output='screen'
-        ),
-
-
-        # Delay the spawn to ensure Gazebo is ready
+        # 5️⃣ Spawn robot after Ignition is ready
         TimerAction(
-    period=3.0,
-    actions=[
-        Node(
-            package='ros_gz_sim',
-            executable='create',
-            arguments=[
-                '-name', 'drive',
-                '-topic', 'robot_description',
-                '-x', '0', '-y', '0', '-z', '1',
-                '-R', '0', '-P', '', '-Y', '0'
-            ],
-            output='screen'
-        )
-    ]
-
-
+            period=3.0,
+            actions=[
+                Node(
+                    package='ros_gz_sim',
+                    executable='create',
+                    arguments=[
+                        '-name', 'drive',
+                        '-topic', 'robot_description',
+                        '-x', '0', '-y', '0', '-z', '1'
+                    ],
+                    parameters=[{'use_sim_time': True}],
+                    output='screen'
+                )
+            ]
         ),
 
-        # ROS2 Control
+        # 6️⃣ Start robot_state_publisher AFTER spawn
+        TimerAction(
+            period=5.0,
+            actions=[
+                Node(
+                    package='robot_state_publisher',
+                    executable='robot_state_publisher',
+                    name='robot_state_publisher',
+                    parameters=[
+                        {'robot_description': open(urdf_path).read()},
+                        {'use_sim_time': True}
+                    ],
+                    output='screen'
+                ),
+                Node(
+                    package='joint_state_publisher',
+                    executable='joint_state_publisher',
+                    name='joint_state_publisher',
+                    output='screen'
+                ),
+            ]
+        ),
+
+        # 7️⃣ ROS 2 Control (controllers etc.)
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
                 os.path.join(drive_share_dir, 'launch', 'ros2_control.launch.py')
             )
         ),
 
-        
-        # Differential Steering Converter - CORE FUNCTIONALITY
+        # 8️⃣ Ackermann / Differential Steering Converter
         TimerAction(
             period=10.0,
             actions=[
@@ -111,23 +111,22 @@ def generate_launch_description():
                     executable='ackermann_cmd_vel_converter',
                     name='ackermann_cmd_vel_converter',
                     parameters=[
-                        {'wheel_radius': 0.1125},           
-                        {'max_steering_angle': 1.047},      
-                        {'robot_length': 1.0},              
-                        {'robot_width': 0.54}               
+                        {'wheel_radius': 0.1125},
+                        {'max_steering_angle': 1.047},
+                        {'robot_length': 1.0},
+                        {'robot_width': 0.54}
                     ],
                     output='screen',
                     remappings=[
-                        ('/cmd_vel', '/cmd_vel'),                              
-                        ('/drive_controller/commands', '/drive_controller/commands'),  
-                        ('/steer_controller/commands', '/steer_controller/commands')   
+                        ('/cmd_vel', '/cmd_vel'),
+                        ('/drive_controller/commands', '/drive_controller/commands'),
+                        ('/steer_controller/commands', '/steer_controller/commands')
                     ]
                 )
             ]
         ),
 
-
-        # Status Monitor - provides feedback WITHOUT sending commands
+        # 9️⃣ Rover status monitor
         TimerAction(
             period=12.0,
             actions=[
