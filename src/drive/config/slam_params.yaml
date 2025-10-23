@@ -9,7 +9,7 @@ slam_toolbox:
     ceres_loss_function: "None"
     odom_frame: "odom"
     map_frame: "map"
-    base_frame: "base_footprint"
+    base_frame: "base_link"
     scan_topic: "/scan"
     mode: "mapping"
-    publish_odom_tf: true
+    publish_odom_tf: false

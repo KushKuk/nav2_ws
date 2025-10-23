@@ -6,21 +6,23 @@ controller_manager:
       type: joint_state_broadcaster/JointStateBroadcaster
 
     drive_controller:
-      type: velocity_controllers/JointGroupVelocityController
+      type: diff_drive_controller/DiffDriveController
 
     steer_controller:
       type: position_controllers/JointGroupPositionController
 
 drive_controller:
   ros__parameters:
-    joints:
-      - joint_wheel_1
-      - joint_wheel_2
-      - joint_wheel_3
-      - joint_wheel_4
-      - joint_wheel_5
-      - joint_wheel_6
-    interface_name: velocity
+    left_wheel_names: ["joint_wheel_4", "joint_wheel_5", "joint_wheel_6"]
+    right_wheel_names: ["joint_wheel_1", "joint_wheel_2", "joint_wheel_3"]
+    wheel_separation: 0.54
+    wheel_radius: 0.1125
+    publish_rate: 50.0
+    odom_frame_id: "odom"
+    base_frame_id: "base_link"
+    publisher_qos:
+      type: "volatile"
+      depth: 10
 
 steer_controller:
   ros__parameters:

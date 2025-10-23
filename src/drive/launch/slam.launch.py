@@ -14,6 +14,7 @@ def generate_launch_description():
     urdf_path = os.path.join(drive_share_dir, 'models', 'drive', 'urdf', 'drive.urdf')
     world_path = os.path.join(drive_share_dir, 'worlds', 'maze.sdf')
     slam_params_path = os.path.join(drive_share_dir, 'config', 'slam_params.yaml')
+    ekf_params_path = os.path.join(drive_share_dir, 'config', 'ekf.yaml')
 
     return LaunchDescription([
 
@@ -127,7 +128,17 @@ def generate_launch_description():
             ]
         ),
 
-        # 9️⃣ SLAM Toolbox
+        # 9️⃣ Robot Localization (EKF)
+        Node(
+            package='robot_localization',
+            executable='ekf_node',
+            name='ekf_filter_node',
+            output='screen',
+            parameters=[ekf_params_path, {'use_sim_time': True}],
+            remappings=[('/odometry/filtered', '/odom_filtered')]
+        ),
+
+        # 🔟 SLAM Toolbox
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
                 os.path.join(slam_toolbox_share_dir, 'launch', 'online_async_launch.py')
@@ -138,7 +149,7 @@ def generate_launch_description():
             }.items(),
         ),
 
-        # 1️⃣0️⃣ Rover status monitor
+        # 1️⃣1️⃣ Rover status monitor
         TimerAction(
             period=12.0,
             actions=[
