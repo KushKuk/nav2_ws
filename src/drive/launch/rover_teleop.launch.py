@@ -132,7 +132,7 @@ def generate_launch_description():
             executable='ekf_node',
             name='ekf_filter_node',
             output='screen',
-            parameters=['/src/drive/config/ekf.yaml'],
+            parameters=[os.path.join(drive_share_dir, 'config', 'ekf.yaml')],
             remappings=[('/odometry/filtered', '/odom_filtered')]
         ),
 

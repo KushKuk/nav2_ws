@@ -772,7 +772,7 @@
 
   <ros2_control name="RoverHardware" type="system">
     <hardware>
-      <plugin>ign_ros2_control/IgnitionSystem</plugin>
+      <plugin>gz_ros2_control/GazeboSimSystem</plugin>
       <plugin>hardware_plugin/hardware_plugin</plugin>
     <!-- hardware parameters you want accessible from info_.hardware_parameters -->
     <param name="sim_mode">true</param>
@@ -846,7 +846,7 @@
 
   <!-- Gazebo plugin for ros2_control -->
   <gazebo>
-    <plugin filename="ign_ros2_control-system" name="ign_ros2_control::IgnitionROS2ControlPlugin">
+    <plugin filename="gz_ros2_control-system" name="gz_ros2_control::GazeboSimROS2ControlPlugin">
       <parameters>/home/kush/nav2_ws/src/drive/models/drive/config/rover_controllers.yaml</parameters>
       <ros>
         <remapping>/clock:=/clock</remapping>
