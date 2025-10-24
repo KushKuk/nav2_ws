@@ -12,24 +12,24 @@ def generate_launch_description():
         # Wait for Gazebo to load the robot and ros2_control plugin
         # Then spawn controllers
         TimerAction(
+            period=5.0,
+            actions=[
+                Node(
+                    package='controller_manager',
+                    executable='spawner',
+                    arguments=['joint_state_broadcaster'],
+                    output='screen',
+                ),
+            ]
+        ),
+
+        TimerAction(
             period=8.0,
             actions=[
                 Node(
                     package='controller_manager',
                     executable='spawner',
                     arguments=['drive_controller'],
-                    output='screen',
-                ),
-            ]
-        ),
-        
-        TimerAction(
-            period=10.0,
-            actions=[
-                Node(
-                    package='controller_manager',
-                    executable='spawner',
-                    arguments=['steer_controller'],
                     output='screen',
                 ),
             ]
