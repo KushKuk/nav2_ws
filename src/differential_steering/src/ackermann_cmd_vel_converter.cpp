@@ -33,7 +33,6 @@ AckermannCmdVelConverter::AckermannCmdVelConverter()
 
     // Publishers for individual wheel control
     drive_pub_ = this->create_publisher<std_msgs::msg::Float64MultiArray>("/drive_controller/commands", 10);
-    steer_pub_ = this->create_publisher<std_msgs::msg::Float64MultiArray>("/steer_controller/commands", 10);
 
     // Subscriber for velocity commands
     cmd_vel_sub_ = this->create_subscription<geometry_msgs::msg::Twist>(
@@ -43,93 +42,45 @@ AckermannCmdVelConverter::AckermannCmdVelConverter()
 
 void AckermannCmdVelConverter::cmdVelCallback(const geometry_msgs::msg::Twist::SharedPtr msg)
 {
-  double linear_x = msg->linear.x;
+    double linear_x = msg->linear.x;
     double angular_z = msg->angular.z;
-    
-    linear_x=linear_x*-1;
-    
-    
 
-    // Wheel rotational speeds (rad/s)
-    std::vector<double> wheel_speeds(6, 0.0);
-
-    // Steering angles are unused in skid steering but kept for compatibility (always 0)
-    std::vector<double> steering_angles(6, 0.0);
-
-    // Calculate linear speeds of left and right wheels
-    double half_width = robot_width_ / 2.0;
-    double left_linear = 0;
-    double right_linear = 0;
-    if (linear_x==0 and angular_z!=0)
-    {
-    if (angular_z>0)
-    {
-        left_linear = -(angular_z * half_width);
-        right_linear = angular_z * half_width;
-        //only right wheels move now
-
-    }
-    else
-    {
-        right_linear = angular_z * half_width;
-        left_linear = -(angular_z * half_width);
-        //only left wheels move now
-        
-    }
-    
-    
+    // Calculate linear speeds of left and right wheels for skid steering
+    double left_linear = linear_x - (angular_z * robot_width_ / 2.0);
+    double right_linear = linear_x + (angular_z * robot_width_ / 2.0);
 
     // Convert to angular velocity (rad/s) for wheels
     double left_speed = left_linear / wheel_radius_;
     double right_speed = right_linear / wheel_radius_;
 
-    // Assign speeds based on left/right wheels
-    
+    // Wheel rotational speeds (rad/s)
+    std::vector<double> wheel_speeds(6, 0.0);
+
+    // Assign speeds to the wheels based on their side.
+    // Assuming wheels 4, 5, 6 are left and 1, 2, 3 are right based on y-coordinates in constructor.
+    // Left wheels
     wheel_speeds[3] = left_speed;
     wheel_speeds[4] = left_speed;
     wheel_speeds[5] = left_speed;
 
-    
-    wheel_speeds[0] = -right_speed;
-    wheel_speeds[1] = -right_speed;
+    // Right wheels
+    wheel_speeds[0] = right_speed;
+    wheel_speeds[1] = right_speed;
     wheel_speeds[2] = right_speed;
-      
 
-    
-    }
-    if (linear_x!=0 and angular_z==0)
-    {
-
-    wheel_speeds[0] = -linear_x;
-    wheel_speeds[2] = linear_x;
-    wheel_speeds[4] = linear_x;
-    wheel_speeds[1] = -linear_x;
-    wheel_speeds[3] = linear_x;
-    wheel_speeds[5] = linear_x;
-    //now every wheel have same speed and direction
-    }
-
-    
-    
-
-    
-    // Publish drive and zero steering
+    // Publish drive commands
     std_msgs::msg::Float64MultiArray drive_msg;
-
     drive_msg.data = wheel_speeds;
-
     drive_pub_->publish(drive_msg);
-    
 
     // Debug logging
-    RCLCPP_DEBUG(this->get_logger(),
-                "Skid Cmd: vx=%.2f, wz=%.2f", linear_x, angular_z);
-    RCLCPP_DEBUG(this->get_logger(),
+    RCLCPP_INFO(this->get_logger(),
+                "Cmd: vx=%.2f, wz=%.2f -> Left Speed: %.2f rad/s, Right Speed: %.2f rad/s",
+                linear_x, angular_z, left_speed, right_speed);
+    RCLCPP_INFO(this->get_logger(),
                 "Wheel Speeds (rad/s): [%.2f, %.2f, %.2f, %.2f, %.2f, %.2f]",
                 wheel_speeds[0], wheel_speeds[1], wheel_speeds[2],
                 wheel_speeds[3], wheel_speeds[4], wheel_speeds[5]);
-
-
 }
 }  
 // namespace differential_steering
