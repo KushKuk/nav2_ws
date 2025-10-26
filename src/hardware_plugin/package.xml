@@ -4,7 +4,7 @@
   <version>0.0.1</version>
   <description>Fortress Rover hardware interface plugin for ros2_control</description>
 
-  <maintainer email="ujjwal@example.com">Ujjwal</maintainer>
+  <maintainer email="kush@example.com">kush</maintainer>
   <license>Apache-2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>

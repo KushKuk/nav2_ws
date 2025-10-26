@@ -146,4 +146,16 @@ def generate_launch_description():
                 )
             ]
         ),
+
+        TimerAction(
+            period=12.0,
+            actions=[
+                Node(
+                    package='drive',
+                    executable='odometry_publisher.py',
+                    name='odometry_publisher',
+                    output='screen'
+                )
+            ]
+        ),
     ])

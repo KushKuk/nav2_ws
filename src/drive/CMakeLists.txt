@@ -17,6 +17,10 @@ install(DIRECTORY launch
   DESTINATION share/${PROJECT_NAME}
 )
 
+install (DIRECTORY models/${PROJECT_NAME}/meshes/
+  DESTINATION share/${PROJECT_NAME}/meshes
+)
+
 install(DIRECTORY worlds/
   DESTINATION share/${PROJECT_NAME}/worlds
 )
