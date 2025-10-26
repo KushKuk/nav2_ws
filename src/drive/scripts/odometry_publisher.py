@@ -1,132 +1,207 @@
 #!/usr/bin/env python3
+
 import rclpy
 from rclpy.node import Node
+from sensor_msgs.msg import JointState
 from nav_msgs.msg import Odometry
-from sensor_msgs.msg import JointState, Imu
-from geometry_msgs.msg import TransformStamped
+from geometry_msgs.msg import TransformStamped, Quaternion
 from tf2_ros import TransformBroadcaster
-from math import sin, cos
-import numpy as np
-if not hasattr(np, 'float'):
-    np.float = float
-from tf_transformations import quaternion_from_euler
-
+import math
 
 class OdometryPublisher(Node):
     def __init__(self):
         super().__init__('odometry_publisher')
-
-        # Parameters
-        self.declare_parameter('wheel_radius', 0.1125)
-        self.declare_parameter('wheel_separation', 0.54)
-        self.wheel_radius = self.get_parameter('wheel_radius').value
-        self.wheel_separation = self.get_parameter('wheel_separation').value
-
-        # State
+        
+        # Publishers
+        self.odom_pub = self.create_publisher(Odometry, '/odom', 10)
+        self.tf_broadcaster = TransformBroadcaster(self)
+        
+        # Subscriber to joint states
+        self.joint_sub = self.create_subscription(
+            JointState,
+            '/joint_states',
+            self.joint_state_callback,
+            10
+        )
+        
+        # Robot parameters (adjust these to match your rover)
+        self.wheel_radius = 0.1125  # meters
+        self.wheel_base = 0.54      # distance between left and right wheels
+        
+        # Odometry state
         self.x = 0.0
         self.y = 0.0
         self.theta = 0.0
-        self.last_time = self.get_clock().now()
-
-        # Publishers / Subscribers
-        self.odom_pub = self.create_publisher(Odometry, '/odom', 10)
-        self.joint_sub = self.create_subscription(JointState, '/joint_states', self.joint_state_callback, 10)
-        self.imu_sub = self.create_subscription(Imu, '/imu/data', self.imu_callback, 10)
-        self.tf_broadcaster = TransformBroadcaster(self)
-
-        self.get_logger().info("✅ OdometryPublisher initialized and running.")
-
-    def joint_state_callback(self, msg: JointState):
-        if not msg.velocity:
-            self.get_logger().warn("Received JointState with no velocities.")
-            return
-
-        # Compute left/right wheel velocities
-        left_vels, right_vels = [], []
-        for i, name in enumerate(msg.name):
-            if name in ['joint_wheel_1', 'joint_wheel_2', 'joint_wheel_3']:
-                left_vels.append(msg.velocity[i] * self.wheel_radius)
-            elif name in ['joint_wheel_4', 'joint_wheel_5', 'joint_wheel_6']:
-                right_vels.append(msg.velocity[i] * self.wheel_radius)
-
-        if not left_vels or not right_vels:
-            self.get_logger().warn_throttle(5.0, "Wheel joint names not matching expected lists.")
-            return
-
-        left_vel = np.mean(left_vels)
-        right_vel = np.mean(right_vels)
-
-        # Integrate position
-        current_time = self.get_clock().now()
-        dt = (current_time - self.last_time).nanoseconds / 1e9
-        if dt <= 0:
-            return
-
-        v = (left_vel + right_vel) / 2.0
-        omega = (right_vel - left_vel) / self.wheel_separation
-
-        self.x += v * cos(self.theta) * dt
-        self.y += v * sin(self.theta) * dt
-        self.theta += omega * dt
-
-        # Build odometry message
-        odom = Odometry()
-        odom.header.stamp = current_time.to_msg()
-        odom.header.frame_id = 'odom'
-        odom.child_frame_id = 'base_link'
-        odom.pose.pose.position.x = self.x
-        odom.pose.pose.position.y = self.y
-
-        q = quaternion_from_euler(0.0, 0.0, self.theta)
-        odom.pose.pose.orientation.x = q[0]
-        odom.pose.pose.orientation.y = q[1]
-        odom.pose.pose.orientation.z = q[2]
-        odom.pose.pose.orientation.w = q[3]
-
-        odom.twist.twist.linear.x = v
-        odom.twist.twist.angular.z = omega
-
-        # Covariances
-        cov = [0.001, 0, 0, 0, 0, 0,
-               0, 0.001, 0, 0, 0, 0,
-               0, 0, 99999, 0, 0, 0,
-               0, 0, 0, 99999, 0, 0,
-               0, 0, 0, 0, 99999, 0,
-               0, 0, 0, 0, 0, 0.01]
-        odom.pose.covariance = cov
-        odom.twist.covariance = cov
-
-        # Publish odom
-        self.odom_pub.publish(odom)
-
-        # Publish TF
-        tf = TransformStamped()
-        tf.header.stamp = current_time.to_msg()
-        tf.header.frame_id = 'odom'
-        tf.child_frame_id = 'base_link'
-        tf.transform.translation.x = self.x
-        tf.transform.translation.y = self.y
-        tf.transform.translation.z = 0.0
-        tf.transform.rotation.x = q[0]
-        tf.transform.rotation.y = q[1]
-        tf.transform.rotation.z = q[2]
-        tf.transform.rotation.w = q[3]
-        self.tf_broadcaster.sendTransform(tf)
-
-        self.last_time = current_time
-
-    def imu_callback(self, msg: Imu):
-        # Update heading from IMU yaw (optional)
-        q = msg.orientation
-        siny_cosp = 2.0 * (q.w * q.z + q.x * q.y)
-        cosy_cosp = 1.0 - 2.0 * (q.y * q.y + q.z * q.z)
-        yaw = np.arctan2(siny_cosp, cosy_cosp)
-        self.theta = yaw
-
+        
+        # Previous wheel positions for delta calculation
+        self.prev_left_pos = 0.0
+        self.prev_right_pos = 0.0
+        self.prev_time = self.get_clock().now()
+        
+        # First callback flag
+        self.first_callback = True
+        
+        # Covariance matrices (36 elements each) - CORRECT FORMAT
+        self.pose_covariance = [
+            0.001, 0.0,   0.0,   0.0,   0.0,   0.0,
+            0.0,   0.001, 0.0,   0.0,   0.0,   0.0,
+            0.0,   0.0,   1e6,   0.0,   0.0,   0.0,
+            0.0,   0.0,   0.0,   1e6,   0.0,   0.0,
+            0.0,   0.0,   0.0,   0.0,   1e6,   0.0,
+            0.0,   0.0,   0.0,   0.0,   0.0,   0.03
+        ]
+        
+        self.twist_covariance = [
+            0.001, 0.0,   0.0,   0.0,   0.0,   0.0,
+            0.0,   0.001, 0.0,   0.0,   0.0,   0.0,
+            0.0,   0.0,   1e6,   0.0,   0.0,   0.0,
+            0.0,   0.0,   0.0,   1e6,   0.0,   0.0,
+            0.0,   0.0,   0.0,   0.0,   1e6,   0.0,
+            0.0,   0.0,   0.0,   0.0,   0.0,   0.03
+        ]
+        
+        self.get_logger().info('✅ OdometryPublisher initialized and running.')
+    
+    def joint_state_callback(self, msg):
+        try:
+            # Get current time
+            current_time = self.get_clock().now()
+            
+            # Find wheel joint indices
+            wheel_indices = {
+                'left': [],
+                'right': []
+            }
+            
+            # Map wheel joints (adjust names to match your URDF)
+            left_wheels = ['joint_wheel_4', 'joint_wheel_5', 'joint_wheel_6']
+            right_wheels = ['joint_wheel_1', 'joint_wheel_2', 'joint_wheel_3']
+            
+            for i, name in enumerate(msg.name):
+                if name in left_wheels:
+                    wheel_indices['left'].append(i)
+                elif name in right_wheels:
+                    wheel_indices['right'].append(i)
+            
+            # Check if we have wheel data
+            if not wheel_indices['left'] or not wheel_indices['right']:
+                self.get_logger().warn('⚠️  Wheel joints not found in joint_states', throttle_duration_sec=2.0)
+                return
+            
+            # Calculate average wheel positions
+            left_pos = sum(msg.position[i] for i in wheel_indices['left']) / len(wheel_indices['left'])
+            right_pos = sum(msg.position[i] for i in wheel_indices['right']) / len(wheel_indices['right'])
+            
+            # Skip first callback to initialize previous positions
+            if self.first_callback:
+                self.prev_left_pos = left_pos
+                self.prev_right_pos = right_pos
+                self.prev_time = current_time
+                self.first_callback = False
+                self.get_logger().info('📊 First joint state received, odometry started.')
+                return
+            
+            # Calculate time delta
+            dt = (current_time - self.prev_time).nanoseconds / 1e9
+            if dt <= 0:
+                return
+            
+            # Calculate wheel deltas (change in position)
+            delta_left = left_pos - self.prev_left_pos
+            delta_right = right_pos - self.prev_right_pos
+            
+            # Calculate linear distances traveled by each side
+            dist_left = delta_left * self.wheel_radius
+            dist_right = delta_right * self.wheel_radius
+            
+            # Calculate robot's linear and angular displacement
+            dist_center = (dist_left + dist_right) / 2.0
+            delta_theta = (dist_right - dist_left) / self.wheel_base
+            
+            # Update pose
+            self.x += dist_center * math.cos(self.theta + delta_theta / 2.0)
+            self.y += dist_center * math.sin(self.theta + delta_theta / 2.0)
+            self.theta += delta_theta
+            
+            # Normalize theta to [-pi, pi]
+            self.theta = math.atan2(math.sin(self.theta), math.cos(self.theta))
+            
+            # Calculate velocities
+            linear_vel = dist_center / dt
+            angular_vel = delta_theta / dt
+            
+            # Create and publish odometry message
+            odom = Odometry()
+            odom.header.stamp = current_time.to_msg()
+            odom.header.frame_id = 'odom'
+            odom.child_frame_id = 'base_link'
+            
+            # Set position
+            odom.pose.pose.position.x = self.x
+            odom.pose.pose.position.y = self.y
+            odom.pose.pose.position.z = 0.0
+            
+            # Set orientation (convert theta to quaternion)
+            odom.pose.pose.orientation = self.euler_to_quaternion(0, 0, self.theta)
+            
+            # Set covariance - CORRECT: as list, not tuple
+            odom.pose.covariance = self.pose_covariance
+            
+            # Set velocities
+            odom.twist.twist.linear.x = linear_vel
+            odom.twist.twist.linear.y = 0.0
+            odom.twist.twist.angular.z = angular_vel
+            
+            # Set twist covariance - CORRECT: as list, not tuple
+            odom.twist.covariance = self.twist_covariance
+            
+            # Publish odometry
+            self.odom_pub.publish(odom)
+            
+            # Publish TF transform
+            self.publish_tf(current_time, odom.pose.pose.orientation)
+            
+            # Update previous values
+            self.prev_left_pos = left_pos
+            self.prev_right_pos = right_pos
+            self.prev_time = current_time
+            
+        except Exception as e:
+            self.get_logger().error(f'❌ Error in joint_state_callback: {str(e)}')
+    
+    def euler_to_quaternion(self, roll, pitch, yaw):
+        """Convert Euler angles to quaternion"""
+        qx = math.sin(roll/2) * math.cos(pitch/2) * math.cos(yaw/2) - math.cos(roll/2) * math.sin(pitch/2) * math.sin(yaw/2)
+        qy = math.cos(roll/2) * math.sin(pitch/2) * math.cos(yaw/2) + math.sin(roll/2) * math.cos(pitch/2) * math.sin(yaw/2)
+        qz = math.cos(roll/2) * math.cos(pitch/2) * math.sin(yaw/2) - math.sin(roll/2) * math.sin(pitch/2) * math.cos(yaw/2)
+        qw = math.cos(roll/2) * math.cos(pitch/2) * math.cos(yaw/2) + math.sin(roll/2) * math.sin(pitch/2) * math.sin(yaw/2)
+        
+        q = Quaternion()
+        q.x = qx
+        q.y = qy
+        q.z = qz
+        q.w = qw
+        return q
+    
+    def publish_tf(self, current_time, orientation):
+        """Publish TF transform from odom to base_link"""
+        t = TransformStamped()
+        t.header.stamp = current_time.to_msg()
+        t.header.frame_id = 'odom'
+        t.child_frame_id = 'base_link'
+        
+        t.transform.translation.x = self.x
+        t.transform.translation.y = self.y
+        t.transform.translation.z = 0.0
+        
+        t.transform.rotation = orientation
+        
+        self.tf_broadcaster.sendTransform(t)
 
 def main(args=None):
     rclpy.init(args=args)
     node = OdometryPublisher()
+    
     try:
         rclpy.spin(node)
     except KeyboardInterrupt:
@@ -134,7 +209,6 @@ def main(args=None):
     finally:
         node.destroy_node()
         rclpy.shutdown()
-
 
 if __name__ == '__main__':
     main()
