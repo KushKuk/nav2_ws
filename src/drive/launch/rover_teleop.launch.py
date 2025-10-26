@@ -12,10 +12,8 @@ def generate_launch_description():
 
     urdf_path = os.path.join(drive_share_dir, 'models', 'drive', 'urdf', 'drive.urdf')
     world_path = os.path.join(drive_share_dir, 'worlds', 'maze.sdf')
-    controller_config = os.path.join(drive_share_dir, 'models', 'drive', 'config', 'rover_controllers.yaml')
 
     return LaunchDescription([
-
         # 1️⃣ Start Ignition Gazebo
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
@@ -24,7 +22,7 @@ def generate_launch_description():
             launch_arguments={'gz_args': f'-r {world_path}'}.items()
         ),
 
-        # 2️⃣ Clock bridge (fixed syntax)
+        # 2️⃣ Clock bridge
         Node(
             package='ros_gz_bridge',
             executable='parameter_bridge',
@@ -54,7 +52,19 @@ def generate_launch_description():
             output='screen'
         ),
 
-        # 5️⃣ Spawn robot after Ignition is ready
+        # 5️⃣ Robot State Publisher (start early, before spawn)
+        Node(
+            package='robot_state_publisher',
+            executable='robot_state_publisher',
+            name='robot_state_publisher',
+            parameters=[
+                {'robot_description': open(urdf_path).read()},
+                {'use_sim_time': True}
+            ],
+            output='screen'
+        ),
+
+        # 6️⃣ Spawn robot after Ignition is ready
         TimerAction(
             period=3.0,
             actions=[
@@ -72,39 +82,21 @@ def generate_launch_description():
             ]
         ),
 
-        # 6️⃣ Start robot_state_publisher AFTER spawn
+        # 7️⃣ ROS 2 Control (spawn controllers)
         TimerAction(
             period=5.0,
             actions=[
-                Node(
-                    package='robot_state_publisher',
-                    executable='robot_state_publisher',
-                    name='robot_state_publisher',
-                    parameters=[
-                        {'robot_description': open(urdf_path).read()},
-                        {'use_sim_time': True}
-                    ],
-                    output='screen'
-                ),
-                Node(
-                    package='joint_state_publisher',
-                    executable='joint_state_publisher',
-                    name='joint_state_publisher',
-                    output='screen'
-                ),
+                IncludeLaunchDescription(
+                    PythonLaunchDescriptionSource(
+                        os.path.join(drive_share_dir, 'launch', 'ros2_control.launch.py')
+                    )
+                )
             ]
-        ),
-
-        # 7️⃣ ROS 2 Control (controllers etc.)
-        IncludeLaunchDescription(
-            PythonLaunchDescriptionSource(
-                os.path.join(drive_share_dir, 'launch', 'ros2_control.launch.py')
-            )
         ),
 
         # 8️⃣ Ackermann / Differential Steering Converter
         TimerAction(
-            period=10.0,
+            period=8.0,
             actions=[
                 Node(
                     package='differential_steering',
@@ -114,7 +106,8 @@ def generate_launch_description():
                         {'wheel_radius': 0.1125},
                         {'max_steering_angle': 1.047},
                         {'robot_length': 1.0},
-                        {'robot_width': 0.54}
+                        {'robot_width': 0.54},
+                        {'use_sim_time': True}
                     ],
                     output='screen',
                     remappings=[
@@ -126,20 +119,24 @@ def generate_launch_description():
             ]
         ),
 
-        # odom
-            Node(
-            package='robot_localization',
-            executable='ekf_node',
-            name='ekf_filter_node',
-            output='screen',
-            parameters=['/src/drive/config/ekf.yaml'],
-            remappings=[('/odometry/filtered', '/odom_filtered')]
+        # 9️⃣ EKF for odometry
+        TimerAction(
+            period=8.0,
+            actions=[
+                Node(
+                    package='robot_localization',
+                    executable='ekf_node',
+                    name='ekf_filter_node',
+                    output='screen',
+                    parameters=['/src/drive/config/ekf.yaml', {'use_sim_time': True}],
+                    remappings=[('/odometry/filtered', '/odom_filtered')]
+                )
+            ]
         ),
 
-
-        # 9️⃣ Rover status monitor
+        # 🔟 Rover status monitor
         TimerAction(
-            period=12.0,
+            period=10.0,
             actions=[
                 Node(
                     package='drive',
