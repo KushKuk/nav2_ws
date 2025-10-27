@@ -22,7 +22,34 @@ def generate_launch_description():
             launch_arguments={'gz_args': f'-r {world_path}'}.items()
         ),
 
-        # 2️⃣ Clock bridge
+        # 2️⃣ Robot State Publisher (IMMEDIATE - NO TIMER)
+        Node(
+            package='robot_state_publisher',
+            executable='robot_state_publisher',
+            name='robot_state_publisher',
+            parameters=[
+                {'robot_description': open(urdf_path).read()},
+                {'use_sim_time': True},
+                {'publish_frequency': 50.0}
+            ],
+            output='screen'
+        ),
+
+        # 2️⃣.5 CRITICAL: Static TF for lidar (wait 1 sec for robot_state_publisher)
+        TimerAction(
+            period=1.0,
+            actions=[
+                Node(
+                    package='tf2_ros',
+                    executable='static_transform_publisher',
+                    name='base_link_to_lidar',
+                    arguments=['0.36', '-0.3', '0.14', '0', '0', '0', 'base_link', 'lidar_link'],
+                    output='screen'
+                )
+            ]
+        ),
+
+        # 3️⃣ Clock bridge
         Node(
             package='ros_gz_bridge',
             executable='parameter_bridge',
@@ -32,7 +59,7 @@ def generate_launch_description():
             output='screen'
         ),
 
-        # 3️⃣ IMU bridge
+        # 4️⃣ IMU bridge
         Node(
             package='ros_gz_bridge',
             executable='parameter_bridge',
@@ -42,29 +69,20 @@ def generate_launch_description():
             output='screen'
         ),
 
-        # 4️⃣ LiDAR bridge
-        Node(
+        # 5️⃣ LiDAR bridge
+        TimerAction(
+            period=7.0,
+            actions=[Node(
             package='ros_gz_bridge',
             executable='parameter_bridge',
             name='lidar_bridge',
             arguments=['/scan@sensor_msgs/msg/LaserScan@ignition.msgs.LaserScan'],
             parameters=[{'use_sim_time': True}],
             output='screen'
-        ),
+        )
+        ]),
 
-        # 5️⃣ Robot State Publisher (start early, before spawn)
-        Node(
-            package='robot_state_publisher',
-            executable='robot_state_publisher',
-            name='robot_state_publisher',
-            parameters=[
-                {'robot_description': open(urdf_path).read()},
-                {'use_sim_time': True}
-            ],
-            output='screen'
-        ),
-
-        # 6️⃣ Spawn robot after Ignition is ready
+        # 6️⃣ Spawn robot
         TimerAction(
             period=3.0,
             actions=[
@@ -82,7 +100,7 @@ def generate_launch_description():
             ]
         ),
 
-        # 7️⃣ ROS 2 Control (spawn controllers)
+        # 7️⃣ ROS 2 Control
         TimerAction(
             period=5.0,
             actions=[
@@ -94,7 +112,21 @@ def generate_launch_description():
             ]
         ),
 
-        # 8️⃣ Ackermann / Differential Steering Converter
+        # 8️⃣ Odometry Publisher (NO declare_parameter in the script!)
+        TimerAction(
+            period=7.0,
+            actions=[
+                Node(
+                    package='drive',
+                    executable='odometry_publisher.py',
+                    name='odometry_publisher',
+                    parameters=[{'use_sim_time': True}],
+                    output='screen'
+                )
+            ]
+        ),
+
+        # 9️⃣ Steering Converter
         TimerAction(
             period=8.0,
             actions=[
@@ -119,21 +151,6 @@ def generate_launch_description():
             ]
         ),
 
-        # 9️⃣ EKF for odometry
-        TimerAction(
-            period=8.0,
-            actions=[
-                Node(
-                    package='robot_localization',
-                    executable='ekf_node',
-                    name='ekf_filter_node',
-                    output='screen',
-                    parameters=['/src/drive/config/ekf.yaml', {'use_sim_time': True}],
-                    remappings=[('/odometry/filtered', '/odom_filtered')]
-                )
-            ]
-        ),
-
         # 🔟 Rover status monitor
         TimerAction(
             period=10.0,
@@ -142,18 +159,7 @@ def generate_launch_description():
                     package='drive',
                     executable='rover_status_monitor.py',
                     name='rover_status_monitor',
-                    output='screen'
-                )
-            ]
-        ),
-
-        TimerAction(
-            period=12.0,
-            actions=[
-                Node(
-                    package='drive',
-                    executable='odometry_publisher.py',
-                    name='odometry_publisher',
+                    parameters=[{'use_sim_time': True}],
                     output='screen'
                 )
             ]
